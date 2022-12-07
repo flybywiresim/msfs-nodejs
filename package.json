@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "npx jest",
-    "build": "rollup -c",
+    "build": "node-gyp configure && node-gyp build && rollup -c",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },

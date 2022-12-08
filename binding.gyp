@@ -2,7 +2,10 @@
   "targets": [
     {
       "target_name": "msfs-bindings",
-      "sources": [ "src/bindings/simconnect.cc" ],
+      "sources": [
+        "src/bindings/simconnect/context.cc",
+        "src/bindings/simconnect/wrapper.cc"
+      ],
       "include_dirs": [
         "C:\\MSFS SDK\\SimConnect SDK\\include"
       ],

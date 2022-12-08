@@ -57,6 +57,41 @@ ReturnCode Context::mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::St
     return ReturnCode::Ok;
 }
 
+ReturnCode Context::createClientData(int dataId, DWORD datasize, bool readOnly) {
+    if (this->hSimConnect == 0) {
+        return ReturnCode::NotConnected;
+    }
+
+    DWORD readOnlyFlag = readOnly ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : 0;
+    HRESULT result = SimConnect_CreateClientData(this->hSimConnect, dataId, datasize, readOnlyFlag);
+
+    if (result == E_FAIL) {
+        this->close();
+        return ReturnCode::Failure;
+    } else if (result == SIMCONNECT_EXCEPTION_INVALID_DATA_SIZE) {
+        return ReturnCode::InvalidDataSize;
+    } else if (result == SIMCONNECT_EXCEPTION_OUT_OF_BOUNDS) {
+        return ReturnCode::OutOfBounds;
+    }
+
+    return ReturnCode::Ok;
+}
+
+ReturnCode Context::addToClientDataDefinition(int dataDefinitionId, int offset, int sizeOrType, float epsilon) {
+    if (this->hSimConnect == 0) {
+        return ReturnCode::NotConnected;
+    }
+
+    HRESULT result = SimConnect_AddToClientDataDefinition(this->hSimConnect, dataDefinitionId, offset, sizeOrType, epsilon);
+
+    if (result == E_FAIL) {
+        this->close();
+        return ReturnCode::Failure;
+    }
+
+    return ReturnCode::Ok;
+}
+
 void Context::deleteInstance(void* data) {
     delete static_cast<Context*>(data);
 }

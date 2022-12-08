@@ -11,6 +11,8 @@ namespace simconnect {
         InvalidArgument = 6,
         AlreadyCreated = 7,
         DuplicateId = 8,
+        InvalidDataSize = 9,
+        OutOfBounds = 10,
     };
 }
 }

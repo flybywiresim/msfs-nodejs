@@ -47,6 +47,32 @@ void ClientDataDefinition::createClientData(const FunctionCallbackInfo<Value>& i
     if (!context->connected()) {
         isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Not connected to the server").ToLocalChecked()));
     }
+
+    if (info.Length() != 3) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid number of arguments").ToLocalChecked()));
+    }
+    if (!info[0]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. dataId must be a number").ToLocalChecked()));
+    }
+    if (!info[1]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. datasize must be a number").ToLocalChecked()));
+    }
+    if (!info[2]->IsBoolean()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. readOnly must be a boolean").ToLocalChecked()));
+    }
+
+    int dataId = static_cast<int>(info[0].As<Number>()->Value());
+    DWORD datasize = static_cast<DWORD>(info[1].As<Number>()->Value());
+    bool readOnly = info[2].As<Boolean>()->Value();
+
+    auto returncode = context->createClientData(dataId, datasize, readOnly);
+    if (returncode == ReturnCode::Failure) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
+    } else if (returncode == ReturnCode::InvalidDataSize) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Datasize exceeds SIMCONNECT_MAX_SIZE").ToLocalChecked()));
+    } else if (returncode == ReturnCode::OutOfBounds) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Datasize exceeds maximum memory").ToLocalChecked()));
+    }
 }
 
 void ClientDataDefinition::addToClientDataDefinition(const FunctionCallbackInfo<Value>& info) {
@@ -55,5 +81,31 @@ void ClientDataDefinition::addToClientDataDefinition(const FunctionCallbackInfo<
 
     if (!context->connected()) {
         isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Not connected to the server").ToLocalChecked()));
+    }
+
+    if (info.Length() != 4) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid number of arguments").ToLocalChecked()));
+    }
+    if (!info[0]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. dataDefinitionId must be a number").ToLocalChecked()));
+    }
+    if (!info[1]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. offset must be a number").ToLocalChecked()));
+    }
+    if (!info[2]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. sizeOrType must be a number").ToLocalChecked()));
+    }
+    if (!info[3]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Invalid argument type. epsilon must be a number").ToLocalChecked()));
+    }
+
+    int dataDefinitionId = static_cast<int>(info[0].As<Number>()->Value());
+    int offset = static_cast<int>(info[1].As<Number>()->Value());
+    int sizeOrType = static_cast<int>(info[2].As<Number>()->Value());
+    float epsilon = info[3].As<Number>()->Value();
+
+    auto returncode = context->addToClientDataDefinition(dataDefinitionId, offset, sizeOrType, epsilon);
+    if (returncode == ReturnCode::Failure) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
     }
 }

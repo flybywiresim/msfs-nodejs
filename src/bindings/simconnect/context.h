@@ -21,6 +21,8 @@ namespace simconnect {
             ReturnCode close();
             bool connected() const;
             ReturnCode mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::String> name, int dataId);
+            ReturnCode createClientData(int dataId, DWORD datasize, bool readOnly);
+            ReturnCode addToClientDataDefinition(int dataDefinitionId, int offset, int sizeOrType, float epsilon);
 
             static void deleteInstance(void* data);
     };

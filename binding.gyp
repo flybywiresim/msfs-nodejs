@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "msfs-bindings",
+      "target_name": "msfs",
       "sources": [
         "src/bindings/simconnect/clientdatadefinition.cc",
         "src/bindings/simconnect/connection.cc",

@@ -4,6 +4,7 @@
       "target_name": "msfs-bindings",
       "sources": [
         "src/bindings/simconnect/clientdatadefinition.cc",
+        "src/bindings/simconnect/connection.cc",
         "src/bindings/simconnect/context.cc",
         "src/bindings/simconnect/wrapper.cc"
       ],

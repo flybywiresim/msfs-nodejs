@@ -1,4 +1,4 @@
-const msfs = require('build/Release/msfs');
+const msfs = require('./libs/msfs');
 
 export class Connection {
     public open(name: string): void {

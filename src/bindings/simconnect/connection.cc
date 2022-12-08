@@ -33,10 +33,5 @@ void Connection::open(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 void Connection::close(const v8::FunctionCallbackInfo<v8::Value>& info) {
     simconnect::Context* context = reinterpret_cast<simconnect::Context*>(info.Data().As<External>()->Value());
-    Isolate* isolate = info.GetIsolate();
-
-    auto returncode = context->close();
-    if (returncode == ReturnCode::NotConnected) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Were not connected to the server").ToLocalChecked()));
-    }
+    context->close();
 }

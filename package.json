@@ -8,6 +8,7 @@
   "scripts": {
     "test": "npx jest",
     "build:bindings": "node-gyp rebuild",
+    "build:bindings:dev:": "node-gyp rebuild --debug",
     "build:rollup": "rollup -c",
     "build:all": "npm run build:bindings && npm run build:rollup",
     "lint": "eslint src/**/*.ts",

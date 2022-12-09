@@ -32,13 +32,9 @@ void ClientDataDefinition::mapClientDataNameToId(const FunctionCallbackInfo<Valu
 
     int dataId = static_cast<int>(info[1].As<Number>()->Value());
 
-    auto returncode = context->mapClientDataNameToId(isolate, name, dataId);
-    if (returncode == ReturnCode::Failure) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
-    } else if (returncode == ReturnCode::AlreadyCreated) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Mapping already created").ToLocalChecked()));
-    } else if (returncode == ReturnCode::DuplicateId) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Found duplicated ID").ToLocalChecked()));
+    auto success = context->mapClientDataNameToId(isolate, name, dataId);
+    if (!success) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, context->lastError().c_str()).ToLocalChecked()));
     }
 }
 
@@ -67,13 +63,9 @@ void ClientDataDefinition::createClientData(const FunctionCallbackInfo<Value>& i
     DWORD datasize = static_cast<DWORD>(info[1].As<Number>()->Value());
     bool readOnly = info[2].As<Boolean>()->Value();
 
-    auto returncode = context->createClientData(dataId, datasize, readOnly);
-    if (returncode == ReturnCode::Failure) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
-    } else if (returncode == ReturnCode::InvalidDataSize) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Datasize exceeds SIMCONNECT_MAX_SIZE").ToLocalChecked()));
-    } else if (returncode == ReturnCode::OutOfBounds) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Datasize exceeds maximum memory").ToLocalChecked()));
+    auto success = context->createClientData(dataId, datasize, readOnly);
+    if (!success) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, context->lastError().c_str()).ToLocalChecked()));
     }
 }
 
@@ -106,12 +98,13 @@ void ClientDataDefinition::addToClientDataDefinition(const FunctionCallbackInfo<
     int sizeOrType = static_cast<int>(info[2].As<Number>()->Value());
     float epsilon = info[3].As<Number>()->Value();
 
-    auto returncode = context->addToClientDataDefinition(dataDefinitionId, offset, sizeOrType, epsilon);
-    if (returncode == ReturnCode::Failure) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
+    auto success = context->addToClientDataDefinition(dataDefinitionId, offset, sizeOrType, epsilon);
+    if (!success) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, context->lastError().c_str()).ToLocalChecked()));
     }
 }
 
+#include <iostream>
 void ClientDataDefinition::setClientData(const v8::FunctionCallbackInfo<v8::Value>& info) {
     simconnect::Context* context = reinterpret_cast<simconnect::Context*>(info.Data().As<External>()->Value());
     Isolate* isolate = info.GetIsolate();
@@ -136,9 +129,10 @@ void ClientDataDefinition::setClientData(const v8::FunctionCallbackInfo<v8::Valu
     int dataId = static_cast<int>(info[0].As<Number>()->Value());
     int dataDefinitionId = static_cast<int>(info[1].As<Number>()->Value());
     char* data = node::Buffer::Data(info[2]);
+    DWORD size = node::Buffer::Length(info[2]);
 
-    auto returncode = context->setClientData(dataId, dataDefinitionId, data);
-    if (returncode == ReturnCode::Failure) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Unknown error occured. Connection closed").ToLocalChecked()));
+    auto success = context->setClientData(dataId, dataDefinitionId, size, data);
+    if (!success) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, context->lastError().c_str()).ToLocalChecked()));
     }
 }

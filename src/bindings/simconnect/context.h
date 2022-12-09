@@ -4,26 +4,26 @@
 #include <SimConnect.h>
 #include <node.h>
 
-#include "returncode.h"
-
 namespace msfs {
 namespace nodejs {
 namespace simconnect {
     class Context {
         private:
             HANDLE hSimConnect = 0;
+            std::string sLastError = "";
 
         public:
             explicit Context(v8::Isolate* isolate);
             ~Context();
 
-            ReturnCode open(v8::Isolate* isolate, v8::Local<v8::String> name);
-            ReturnCode close();
+            bool open(v8::Isolate* isolate, v8::Local<v8::String> name);
+            bool close();
             bool connected() const;
-            ReturnCode mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::String> name, int dataId);
-            ReturnCode createClientData(int dataId, DWORD datasize, bool readOnly);
-            ReturnCode addToClientDataDefinition(int dataDefinitionId, int offset, int sizeOrType, float epsilon);
-            ReturnCode setClientData(int dataId, int dataDefinitionId, char* data);
+            bool mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::String> name, int dataId);
+            bool createClientData(int dataId, DWORD datasize, bool readOnly);
+            bool addToClientDataDefinition(int dataDefinitionId, int offset, int sizeOrType, float epsilon);
+            bool setClientData(int dataId, int dataDefinitionId, DWORD size, char* data);
+            const std::string& lastError() const;
 
             static void deleteInstance(void* data);
     };

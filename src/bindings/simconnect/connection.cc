@@ -21,13 +21,9 @@ void Connection::open(const v8::FunctionCallbackInfo<v8::Value>& info) {
         isolate->ThrowException(Exception::RangeError(String::NewFromUtf8(isolate, "Empty string is not allowed").ToLocalChecked()));
     }
 
-    auto returncode = context->open(isolate, name);
-    if (returncode == ReturnCode::Failure) {
-        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Unable to establish a connection").ToLocalChecked()));
-    } else if (returncode == ReturnCode::InvalidArgument) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Invalid connection name").ToLocalChecked()));
-    } else if (returncode == ReturnCode::AlreadyConnected) {
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, "Already connected to the server").ToLocalChecked()));
+    auto success = context->open(isolate, name);
+    if (!success) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, context->lastError().c_str()).ToLocalChecked()));
     }
 }
 

@@ -44,7 +44,8 @@ ReturnCode Context::mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::St
         return ReturnCode::NotConnected;
     }
 
-    HRESULT result = SimConnect_MapClientDataNameToID(&this->hSimConnect, std::string(*v8::String::Utf8Value(isolate, name)).c_str(), dataId);
+    const auto nameStr = std::string(*v8::String::Utf8Value(isolate, name));
+    HRESULT result = SimConnect_MapClientDataNameToID(&this->hSimConnect, nameStr.c_str(), dataId);
     if (result == E_FAIL) {
         this->close();
         return ReturnCode::Failure;

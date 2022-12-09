@@ -30,6 +30,9 @@ void Initialize(Local<Object> exports, Local<Module> module, Local<v8::Context> 
     exports->Set(context,
                  String::NewFromUtf8(isolate, "addToClientDataDefinition").ToLocalChecked(),
                  FunctionTemplate::New(isolate, ClientDataDefinition::addToClientDataDefinition, external)->GetFunction(context).ToLocalChecked()).FromJust();
+    exports->Set(context,
+                 String::NewFromUtf8(isolate, "setClientData").ToLocalChecked(),
+                 FunctionTemplate::New(isolate, ClientDataDefinition::setClientData, external)->GetFunction(context).ToLocalChecked()).FromJust();
 }
 
 // NODE_MODULE_CONTEXT_AWARE does not work with VS2019

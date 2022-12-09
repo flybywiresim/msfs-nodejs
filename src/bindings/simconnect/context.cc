@@ -92,6 +92,21 @@ ReturnCode Context::addToClientDataDefinition(int dataDefinitionId, int offset, 
     return ReturnCode::Ok;
 }
 
+ReturnCode Context::setClientData(int dataId, int dataDefinitionId, char* data) {
+    if (this->hSimConnect == 0) {
+        return ReturnCode::NotConnected;
+    }
+
+    HRESULT result = SimConnect_SetClientData(this->hSimConnect, dataId, dataDefinitionId, 0, 0, 1, data);
+
+    if (result == E_FAIL) {
+        this->close();
+        return ReturnCode::Failure;
+    }
+
+    return ReturnCode::Ok;
+}
+
 void Context::deleteInstance(void* data) {
     delete static_cast<Context*>(data);
 }

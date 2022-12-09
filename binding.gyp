@@ -6,6 +6,7 @@
         "src/bindings/simconnect/clientdatadefinition.cc",
         "src/bindings/simconnect/connection.cc",
         "src/bindings/simconnect/context.cc",
+        "src/bindings/simconnect/helper.cc",
         "src/bindings/simconnect/wrapper.cc"
       ],
       "include_dirs": [

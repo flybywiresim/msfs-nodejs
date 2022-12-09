@@ -2,7 +2,7 @@
 
 using namespace msfs::nodejs::simconnect;
 
-std::string Helper::getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception) {
+std::string Helper::translateException(SIMCONNECT_EXCEPTION exception) {
     switch (exception) {
         case SIMCONNECT_EXCEPTION_NONE:
             return "";

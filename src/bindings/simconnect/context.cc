@@ -55,7 +55,7 @@ bool Context::mapClientDataNameToId(v8::Isolate* isolate, v8::Local<v8::String> 
     return true;
 }
 
-ReturnCode Context::createClientData(int dataId, DWORD datasize, bool readOnly) {
+bool Context::createClientData(int dataId, DWORD datasize, bool readOnly) {
     if (this->hSimConnect == 0) {
         this->sLastError = "Not connected";
         return false;
@@ -94,7 +94,7 @@ bool Context::addToClientDataDefinition(int dataDefinitionId, int offset, int si
     return true;
 }
 
-ReturnCode Context::setClientData(int dataId, int dataDefinitionId, DWORD size, char* data) {
+bool Context::setClientData(int dataId, int dataDefinitionId, DWORD size, char* data) {
     if (this->hSimConnect == 0) {
         this->sLastError = "Not connected";
         return false;

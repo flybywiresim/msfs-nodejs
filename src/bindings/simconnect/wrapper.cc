@@ -65,6 +65,7 @@ Napi::Object Wrapper::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "SimConnect", {
         InstanceMethod<&Wrapper::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Wrapper::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&Wrapper::createNewItem>("createNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });
 

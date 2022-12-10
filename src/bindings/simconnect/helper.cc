@@ -1,6 +1,6 @@
 #include "helper.h"
 
-using namespace msfs::nodejs::simconnect;
+using namespace msfs::simconnect;
 
 std::string Helper::translateException(SIMCONNECT_EXCEPTION exception) {
     switch (exception) {

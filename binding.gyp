@@ -3,6 +3,7 @@
     {
       "target_name": "msfs",
       "sources": [
+        "src/bindings/simconnect/connection.cc",
         "src/bindings/simconnect/wrapper.cc",
         "src/bindings/simconnect/helper.cc",
         "src/bindings/msfs.cc"

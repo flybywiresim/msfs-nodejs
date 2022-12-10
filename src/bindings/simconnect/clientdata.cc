@@ -64,6 +64,11 @@ Napi::Value Wrapper::createClientDataArea(const Napi::CallbackInfo& info) {
         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY :
         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
 
+    if (this->clientDataIdExists(clientDataId) == false) {
+        this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
+        return Napi::Boolean::New(env, false);
+    }
+
     HRESULT result = SimConnect_CreateClientData(this->_simConnect, clientDataId, size, readOnlyFlag);
     if (result != S_OK) {
         this->_lastError = "Unable to create the client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);

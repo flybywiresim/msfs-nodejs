@@ -5,7 +5,7 @@
 
 namespace msfs {
 namespace simconnect {
-    class Wrapper : public Napi::ObjectWrap<Wrapper> {
+    class Connection : public Napi::ObjectWrap<Connection> {
     private:
         HANDLE _simConnect;
         std::string _lastError;
@@ -13,14 +13,14 @@ namespace simconnect {
         void close();
     public:
         /**
-         * @brief Constructs a new Wrapper object
-         * @param info Parameter block for the wrapper
+         * @brief Constructs a new Connection object
+         * @param info Parameter block for the Connection
          */
-        Wrapper(const Napi::CallbackInfo& info);
+        Connection(const Napi::CallbackInfo& info);
         /**
-         * @brief Destroys the Wrapper object
+         * @brief Destroys the Connection object
          */
-        ~Wrapper();
+        ~Connection();
 
         /**
          * @brief Opens a SimConnect connection to the server
@@ -42,7 +42,7 @@ namespace simconnect {
         Napi::Value lastError(const Napi::CallbackInfo& info);
 
         /**
-         * @brief Creates a new wrapper object
+         * @brief Creates a new Connection object
          * @param info Parameter block for the new object
          * @return Returns the newly created object
          */

@@ -3,6 +3,7 @@
     {
       "target_name": "simconnect",
       "sources": [
+        "clientdata.cc",
         "connection.cc",
         "helper.cc",
         "simconnect.cc",

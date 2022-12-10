@@ -10,6 +10,8 @@ void Wrapper::close() {
         SimConnect_Close(this->_simConnect);
         this->_simConnect = 0;
     }
+
+    this->_clientDataAreas.clear();
 }
 
 Napi::Value Wrapper::open(const Napi::CallbackInfo& info) {

@@ -1,13 +1,13 @@
 #include <napi.h>
 
-#include "simconnect/connection.h"
+#include "wrapper.h"
 
-using namespace msfs;
+using namespace msfs::simconnect;
 
 void test(const Napi::CallbackInfo& info) { }
 
 Napi::Object initialize(Napi::Env env, Napi::Object exports) {
-    exports = simconnect::Connection::initialize(env, exports);
+    exports = Wrapper::initialize(env, exports);
     return exports;
 }
 

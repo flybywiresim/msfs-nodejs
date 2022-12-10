@@ -7,8 +7,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "npx jest",
-    "build:bindings": "node-gyp rebuild",
-    "build:bindings:dev": "node-gyp rebuild --debug",
+    "build:simconnect-bindings": "cd src/bindings/simconnect && node-gyp rebuild",
+    "build:bindings": "npm run build:simconnect-bindings",
     "build:rollup": "rollup -c",
     "build:all": "npm run build:bindings && npm run build:rollup",
     "lint": "eslint src/**/*.ts",

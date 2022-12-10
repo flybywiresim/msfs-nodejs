@@ -1,11 +1,12 @@
 {
   "targets": [
     {
-      "target_name": "msfs",
+      "target_name": "simconnect",
       "sources": [
-        "src/bindings/simconnect/connection.cc",
-        "src/bindings/simconnect/helper.cc",
-        "src/bindings/msfs.cc"
+        "connection.cc",
+        "helper.cc",
+        "simconnect.cc",
+        "wrapper.cc"
       ],
       "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ],
       "include_dirs": [

@@ -28,7 +28,7 @@ export default {
         }),
         copy({
             targets: [
-                { src: 'build/Release/msfs.node', dest: 'dist/libs/' },
+                { src: 'src/bindings/simconnect/build/Release/simconnect.node', dest: 'dist/libs/' },
             ],
         }),
     ],

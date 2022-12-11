@@ -62,7 +62,10 @@ Napi::Object Wrapper::initialize(Napi::Env env, Napi::Object exports) {
         InstanceMethod<&Wrapper::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::newClientDataArea>("newClientDataArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Wrapper::mapClientDataNameToId>("mapClientDataNameToId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Wrapper::addClientDataDefinition>("addClientDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::createClientDataArea>("createClientDataArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Wrapper::setClientData>("setClientData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&Wrapper::createNewItem>("createNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });

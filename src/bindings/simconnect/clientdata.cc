@@ -40,16 +40,22 @@ Napi::Value Wrapper::mapClientDataNameToId(const Napi::CallbackInfo& info) {
 Napi::Value Wrapper::addClientDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (info.Length() != 1) {
+    if (info.Length() != 2) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
         return env.Null();
     }
-    if (!info[0].IsObject()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'dataDefinition' must be a number").ThrowAsJavaScriptException();
+    if (!info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'clientDataId' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[1].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'dataDefinition' must be an object").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    const auto definitionJS = info[0].As<Napi::Object>();
+    const SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
+
+    const auto definitionJS = info[1].As<Napi::Object>();
     if (!definitionJS.Has("definitionId") || !definitionJS.Get("definitionId").IsNumber()) {
         Napi::TypeError::New(env, "Property not found or invalid. 'definitionId' needs to be defined as a number")
             .ThrowAsJavaScriptException();
@@ -82,11 +88,32 @@ Napi::Value Wrapper::addClientDataDefinition(const Napi::CallbackInfo& info) {
     definition.offset = definitionJS.Get("offset").As<Napi::Number>().Int32Value();
     definition.sizeOrType = definitionJS.Get("sizeOrType").As<Napi::Number>().Int32Value();
     definition.epsilon = definitionJS.Has("epsilon") ? definitionJS.Get("epsilon").As<Napi::Number>().FloatValue() : 0.0f;
-    definition.memberName = definitionJS.Get("memberName").As<Napi::String>().Utf8Value();
+    definition.memberName = definitionJS.Get("memberName").As<Napi::String>();
 
-    /* TODO check if definition exists */
-    /* TODO insert definition */
-    /* TODO register definition */
+    for (auto& dataArea : this->_clientDataAreas) {
+        if (dataArea.first == clientDataId) {
+            /* check if the definition exists */
+            for (const auto& dataDefinition : std::as_const(dataArea.second)) {
+                if (dataDefinition.definitionId == definition.definitionId) {
+                    this->_lastError = "Definition ID already in use.";
+                    return Napi::Boolean::New(env, false);
+                }
+            }
+
+            HRESULT result = SimConnect_AddToClientDataDefinition(this->_simConnect, definition.definitionId, definition.offset,
+                                                                  definition.sizeOrType, definition.epsilon);
+            if (result != S_OK) {
+                this->_lastError = "Unable to add the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+                return Napi::Boolean::New(env, false);
+            }
+
+            dataArea.second.push_back(std::move(definition));
+            return Napi::Boolean::New(env, true);
+        }
+    }
+
+    this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
+    return Napi::Boolean::New(env, false);
 }
 
 Napi::Value Wrapper::createClientDataArea(const Napi::CallbackInfo& info) {

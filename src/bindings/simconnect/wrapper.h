@@ -61,6 +61,11 @@ namespace simconnect {
          * @return True if the mapping was successful, else false with the last error set
          */
         Napi::Value mapClientDataNameToId(const Napi::CallbackInfo& info);
+        /**
+         * @brief Adds a new client data definition
+         * @param info The info block with parameters for the client data ID and the data definition
+         * @return True if the definition is added, else false
+         */
         Napi::Value addClientDataDefinition(const Napi::CallbackInfo& info);
         /**
          * @brief Creates anew client data area on the server

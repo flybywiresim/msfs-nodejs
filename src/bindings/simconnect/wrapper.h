@@ -24,6 +24,16 @@ namespace simconnect {
         std::map<SIMCONNECT_CLIENT_DATA_ID, std::list<DataDefinition>> _clientDataAreas;
 
         bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
+        template <typename T>
+        bool setClientDataNumber(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                 SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId,
+                                 const Napi::Value& value);
+        bool setClientDataField(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                const DataDefinition& definition,
+                                const Napi::Object& object);
+        bool setClientDataFields(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                 const std::list<DataDefinition>& definitions,
+                                 const Napi::Object& object);
 
         void close();
     public:
@@ -73,6 +83,12 @@ namespace simconnect {
          * @return True if the creation was successful, else false with the last error set
          */
         Napi::Value createClientDataArea(const Napi::CallbackInfo& info);
+        /**
+         * @brief Sets the client data entries
+         * @param info The info block with the parameters clientDataId and the partial or full content block with properties as the data definition
+         * @return True if all entries in the data definition are set, else False
+         */
+        Napi::Value setClientData(const Napi::CallbackInfo& info);
         /**
          * @brief Returns the last error of an other call
          * @param info The parameter block without additional parameters

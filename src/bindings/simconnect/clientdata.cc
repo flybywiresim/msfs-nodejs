@@ -156,3 +156,105 @@ Napi::Value Wrapper::createClientDataArea(const Napi::CallbackInfo& info) {
 
     return Napi::Boolean::New(env, true);
 }
+
+template <typename T>
+bool Wrapper::setClientDataNumber(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                  SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId,
+                                  const Napi::Value& value) {
+    auto number = static_cast<T>(value.As<Napi::Number>().DoubleValue());
+
+    HRESULT result = SimConnect_SetClientData(this->_simConnect, clientDataId, definitionId,
+                                              0, 0, sizeof(T), &number);
+    if (result != S_OK) {
+        this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        return false;
+    }
+
+    return true;
+}
+
+bool Wrapper::setClientDataField(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                 const DataDefinition& definition,
+                                 const Napi::Object& object) {
+    switch (definition.sizeOrType) {
+    case SIMCONNECT_CLIENTDATATYPE_INT8:
+        return this->setClientDataNumber<std::int8_t>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    case SIMCONNECT_CLIENTDATATYPE_INT16:
+        return this->setClientDataNumber<std::int16_t>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    case SIMCONNECT_CLIENTDATATYPE_INT32:
+        return this->setClientDataNumber<std::int32_t>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    case SIMCONNECT_CLIENTDATATYPE_INT64:
+        return this->setClientDataNumber<std::int64_t>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    case SIMCONNECT_CLIENTDATATYPE_FLOAT32:
+        return this->setClientDataNumber<float>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    case SIMCONNECT_CLIENTDATATYPE_FLOAT64:
+        return this->setClientDataNumber<double>(clientDataId, definition.definitionId, object.Get(definition.memberName));
+    default:
+    {
+        const auto value = object.Get(definition.memberName);
+        if (!value.IsArrayBuffer()) {
+            this->_lastError = "The member needs to be an ArrayBuffer";
+            return false;
+        }
+
+        Napi::ArrayBuffer buffer = value.As<Napi::ArrayBuffer>();
+        HRESULT result = SimConnect_SetClientData(this->_simConnect, clientDataId, definition.definitionId,
+                                                  0, 0, buffer.ByteLength(), buffer.Data());
+        if (result != S_OK) {
+            this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+            return false;
+        }
+
+        return true;
+    }
+    }
+}
+
+bool Wrapper::setClientDataFields(SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                  const std::list<DataDefinition>& definitions,
+                                  const Napi::Object& object) {
+    bool dataSent = false;
+
+    for (const auto& dataDefinition : std::as_const(definitions)) {
+        /* found a new member entry*/
+        if (object.Has(dataDefinition.memberName)) {
+            if (false == this->setClientDataField(clientDataId, dataDefinition, object)) {
+                return false;
+            }
+
+            dataSent = true;
+        }
+    }
+
+    return dataSent;
+}
+
+Napi::Value Wrapper::setClientData(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 2) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'clientDataId' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[1].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'data' must be an object").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
+    const auto data = info[1].As<Napi::Object>();
+
+    for (auto& dataArea : this->_clientDataAreas) {
+        if (dataArea.first == clientDataId) {
+            const auto dataSet = this->setClientDataFields(clientDataId, dataArea.second, data);
+            return Napi::Boolean::New(env, dataSet);
+        }
+    }
+
+    this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
+    return Napi::Boolean::New(env, false);
+}

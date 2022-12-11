@@ -37,6 +37,58 @@ Napi::Value Wrapper::mapClientDataNameToId(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, true);
 }
 
+Napi::Value Wrapper::addClientDataDefinition(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 1) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'dataDefinition' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    const auto definitionJS = info[0].As<Napi::Object>();
+    if (!definitionJS.Has("definitionId") || !definitionJS.Get("definitionId").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'definitionId' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("offset") || !definitionJS.Get("offset").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'offset' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("sizeOrType") || !definitionJS.Get("sizeOrType").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'sizeOrType' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    /* optional property */
+    if (definitionJS.Has("epsilon") && !definitionJS.Get("epsilon").IsNumber()) {
+        Napi::TypeError::New(env, "Property is invalid. 'epsilon' needs to be defined as number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("memberName") || !definitionJS.Get("memberName").IsString()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'memberName' needs to be defined as a string")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    struct Wrapper::DataDefinition definition;
+    definition.definitionId = definitionJS.Get("definitionId").As<Napi::Number>().Uint32Value();
+    definition.offset = definitionJS.Get("offset").As<Napi::Number>().Int32Value();
+    definition.sizeOrType = definitionJS.Get("sizeOrType").As<Napi::Number>().Int32Value();
+    definition.epsilon = definitionJS.Has("epsilon") ? definitionJS.Get("epsilon").As<Napi::Number>().FloatValue() : 0.0f;
+    definition.memberName = definitionJS.Get("memberName").As<Napi::String>().Utf8Value();
+
+    /* TODO check if definition exists */
+    /* TODO insert definition */
+    /* TODO register definition */
+}
+
 Napi::Value Wrapper::createClientDataArea(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 

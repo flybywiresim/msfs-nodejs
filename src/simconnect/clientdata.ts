@@ -16,7 +16,7 @@ export class ClientData {
 
     public createDataArea(clientDataId: number, name: string, size: number, readOnly: boolean): ClientDataArea {
         if (this.wrapper.newClientDataArea(clientDataId)) {
-            const instance = new ClientDataArea(this, clientDataId);
+            const instance = new ClientDataArea(this.wrapper, clientDataId);
             if (!instance.mapNameToId(name)) return null;
             if (!instance.createDataArea(size, readOnly)) return null;
             return instance;

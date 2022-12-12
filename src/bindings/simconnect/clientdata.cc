@@ -10,17 +10,17 @@ Napi::Value Wrapper::mapClientDataNameToId(const Napi::CallbackInfo& info) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
         return env.Null();
     }
-    if (!info[0].IsString()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'dataName' must be a string").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[1].IsNumber()) {
+    if (!info[0].IsNumber()) {
         Napi::TypeError::New(env, "Invalid argument type. 'dataId' must be a number").ThrowAsJavaScriptException();
         return env.Null();
     }
+    if (!info[1].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'dataName' must be a string").ThrowAsJavaScriptException();
+        return env.Null();
+    }
 
-    Napi::String clientDataName = info[0].As<Napi::String>();
-    SIMCONNECT_CLIENT_DATA_ID clientDataId = info[1].As<Napi::Number>().Uint32Value();
+    Napi::String clientDataName = info[1].As<Napi::String>();
+    SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
 
     if (this->clientDataIdExists(clientDataId) == false) {
         this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
@@ -40,27 +40,16 @@ Napi::Value Wrapper::mapClientDataNameToId(const Napi::CallbackInfo& info) {
 Napi::Value Wrapper::addClientDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (info.Length() != 2) {
+    if (info.Length() != 1) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
         return env.Null();
     }
-    if (!info[0].IsNumber()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'clientDataId' must be a number").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[1].IsObject()) {
+    if (!info[0].IsObject()) {
         Napi::TypeError::New(env, "Invalid argument type. 'dataDefinition' must be an object").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    const SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
-
-    const auto definitionJS = info[1].As<Napi::Object>();
-    if (!definitionJS.Has("definitionId") || !definitionJS.Get("definitionId").IsNumber()) {
-        Napi::TypeError::New(env, "Property not found or invalid. 'definitionId' needs to be defined as a number")
-            .ThrowAsJavaScriptException();
-        return env.Null();
-    }
+    const auto definitionJS = info[0].As<Napi::Object>();
     if (!definitionJS.Has("offset") || !definitionJS.Get("offset").IsNumber()) {
         Napi::TypeError::New(env, "Property not found or invalid. 'offset' needs to be defined as a number")
             .ThrowAsJavaScriptException();
@@ -83,36 +72,52 @@ Napi::Value Wrapper::addClientDataDefinition(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    struct Wrapper::DataDefinition definition;
-    definition.definitionId = definitionJS.Get("definitionId").As<Napi::Number>().Uint32Value();
+    struct Wrapper::ClientDataDefinition definition;
+    definition.definitionId = this->_clientDataDefinitionIdCounter++;
     definition.offset = definitionJS.Get("offset").As<Napi::Number>().Int32Value();
     definition.sizeOrType = definitionJS.Get("sizeOrType").As<Napi::Number>().Int32Value();
     definition.epsilon = definitionJS.Has("epsilon") ? definitionJS.Get("epsilon").As<Napi::Number>().FloatValue() : 0.0f;
     definition.memberName = definitionJS.Get("memberName").As<Napi::String>();
 
-    for (auto& dataArea : this->_clientDataAreas) {
-        if (dataArea.first == clientDataId) {
-            /* check if the definition exists */
-            for (const auto& dataDefinition : std::as_const(dataArea.second)) {
-                if (dataDefinition.definitionId == definition.definitionId) {
-                    this->_lastError = "Definition ID already in use.";
-                    return Napi::Boolean::New(env, false);
-                }
-            }
+    HRESULT result = SimConnect_AddToClientDataDefinition(this->_simConnect, definition.definitionId, definition.offset,
+                                                          definition.sizeOrType, definition.epsilon);
+    if (result != S_OK) {
+        this->_lastError = "Unable to add the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        return Napi::Boolean::New(env, false);
+    }
 
-            HRESULT result = SimConnect_AddToClientDataDefinition(this->_simConnect, definition.definitionId, definition.offset,
-                                                                  definition.sizeOrType, definition.epsilon);
+    this->_clientDataDefinitions.push_back(std::move(definition));
+    return Napi::Boolean::New(env, true);
+}
+
+Napi::Value Wrapper::clearClientDataDefinition(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 1) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'memberName' must be a string").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    const auto memberName = info[0].As<Napi::String>();
+
+    for (auto it = this->_clientDataDefinitions.begin(); it != this->_clientDataDefinitions.end(); ++it) {
+        if (it->memberName == memberName) {
+            HRESULT result = SimConnect_ClearClientDataDefinition(this->_simConnect, it->definitionId);
             if (result != S_OK) {
-                this->_lastError = "Unable to add the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+                this->_lastError = "Unable to clear the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
                 return Napi::Boolean::New(env, false);
             }
 
-            dataArea.second.push_back(std::move(definition));
+            this->_clientDataDefinitions.erase(it);
             return Napi::Boolean::New(env, true);
         }
     }
 
-    this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
+    this->_lastError = "Did not find the data definition";
     return Napi::Boolean::New(env, false);
 }
 
@@ -174,7 +179,7 @@ bool Wrapper::setClientDataNumber(SIMCONNECT_CLIENT_DATA_ID clientDataId,
 }
 
 bool Wrapper::setClientDataField(SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                                 const DataDefinition& definition,
+                                 const Wrapper::ClientDataDefinition& definition,
                                  const Napi::Object& object) {
     switch (definition.sizeOrType) {
     case SIMCONNECT_CLIENTDATATYPE_INT8:
@@ -210,25 +215,6 @@ bool Wrapper::setClientDataField(SIMCONNECT_CLIENT_DATA_ID clientDataId,
     }
 }
 
-bool Wrapper::setClientDataFields(SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                                  const std::list<DataDefinition>& definitions,
-                                  const Napi::Object& object) {
-    bool dataSent = false;
-
-    for (const auto& dataDefinition : std::as_const(definitions)) {
-        /* found a new member entry*/
-        if (object.Has(dataDefinition.memberName)) {
-            if (false == this->setClientDataField(clientDataId, dataDefinition, object)) {
-                return false;
-            }
-
-            dataSent = true;
-        }
-    }
-
-    return dataSent;
-}
-
 Napi::Value Wrapper::setClientData(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -248,13 +234,21 @@ Napi::Value Wrapper::setClientData(const Napi::CallbackInfo& info) {
     SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
     const auto data = info[1].As<Napi::Object>();
 
-    for (auto& dataArea : this->_clientDataAreas) {
-        if (dataArea.first == clientDataId) {
-            const auto dataSet = this->setClientDataFields(clientDataId, dataArea.second, data);
-            return Napi::Boolean::New(env, dataSet);
+    bool dataSent = false;
+
+    for (const auto& dataDefinition : std::as_const(this->_clientDataDefinitions)) {
+        /* found a new member entry*/
+        if (data.Has(dataDefinition.memberName)) {
+            if (false == this->setClientDataField(clientDataId, dataDefinition, data)) {
+                return Napi::Boolean::New(env, false);
+            }
+
+            dataSent = true;
         }
     }
 
-    this->_lastError = "Client data ID not found. Call 'newClientDataArea' first";
-    return Napi::Boolean::New(env, false);
+    if (!dataSent) {
+        this->_lastError = "No member of the data found int the client data definitions";
+    }
+    return Napi::Boolean::New(env, dataSent);
 }

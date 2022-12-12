@@ -8,7 +8,9 @@ using namespace msfs::simconnect;
 Wrapper::Wrapper(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Wrapper>(info),
         _simConnect(0),
-        _clientDataAreas(),
+        _clientDataIds(),
+        _clientDataDefinitionIdCounter(1),
+        _clientDataDefinitions(),
         _lastError() { }
 
 Wrapper::~Wrapper() {
@@ -16,8 +18,8 @@ Wrapper::~Wrapper() {
 }
 
 bool Wrapper::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const {
-    for (const auto& dataArea : std::as_const(this->_clientDataAreas)) {
-        if (dataArea.first == clientDataId)
+    for (const auto& id : std::as_const(this->_clientDataIds)) {
+        if (id == clientDataId)
             return true;
     }
 
@@ -43,7 +45,7 @@ Napi::Value Wrapper::newClientDataArea(const Napi::CallbackInfo& info) {
         return Napi::Boolean::New(env, false);
     }
 
-    this->_clientDataAreas.insert({ clientDataId, {} });
+    this->_clientDataIds.push_back(clientDataId);
     return Napi::Boolean::New(env, true);
 }
 
@@ -61,6 +63,7 @@ Napi::Object Wrapper::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "Wrapper", {
         InstanceMethod<&Wrapper::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Wrapper::isConnected>("isConnected", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::newClientDataArea>("newClientDataArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::mapClientDataNameToId>("mapClientDataNameToId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Wrapper::addClientDataDefinition>("addClientDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),

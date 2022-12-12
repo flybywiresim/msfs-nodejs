@@ -11,7 +11,8 @@ void Wrapper::close() {
         this->_simConnect = 0;
     }
 
-    this->_clientDataAreas.clear();
+    this->_clientDataDefinitionIdCounter = 1;
+    this->_clientDataDefinitions.clear();
 }
 
 Napi::Value Wrapper::open(const Napi::CallbackInfo& info) {
@@ -42,4 +43,9 @@ Napi::Value Wrapper::open(const Napi::CallbackInfo& info) {
 void Wrapper::close(const Napi::CallbackInfo& info) {
     std::ignore = info;
     this->close();
+}
+
+Napi::Value Wrapper::isConnected(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    return Napi::Boolean::New(env, this->_simConnect != 0);
 }

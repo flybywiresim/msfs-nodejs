@@ -11,7 +11,7 @@ namespace msfs {
 namespace simconnect {
     class Wrapper : public Napi::ObjectWrap<Wrapper> {
     private:
-        struct DataDefinition {
+        struct ClientDataDefinition {
             SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId;
             DWORD offset;
             DWORD sizeOrType;
@@ -21,7 +21,9 @@ namespace simconnect {
 
         HANDLE _simConnect;
         std::string _lastError;
-        std::map<SIMCONNECT_CLIENT_DATA_ID, std::list<DataDefinition>> _clientDataAreas;
+        std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
+        SIMCONNECT_CLIENT_DATA_DEFINITION_ID _clientDataDefinitionIdCounter;
+        std::list<ClientDataDefinition> _clientDataDefinitions;
 
         bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
         template <typename T>
@@ -29,11 +31,8 @@ namespace simconnect {
                                  SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId,
                                  const Napi::Value& value);
         bool setClientDataField(SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                                const DataDefinition& definition,
+                                const ClientDataDefinition& definition,
                                 const Napi::Object& object);
-        bool setClientDataFields(SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                                 const std::list<DataDefinition>& definitions,
-                                 const Napi::Object& object);
 
         void close();
     public:
@@ -60,6 +59,12 @@ namespace simconnect {
          */
         void close(const Napi::CallbackInfo& info);
         /**
+         * @brief Checks if the SimConnect connection is actove
+         * @param info The parameter block without additional parameters
+         * @return True if the connection is active, else false
+         */
+        Napi::Value isConnected(const Napi::CallbackInfo& info);
+        /**
          * @brief Creates a new client data area without registering it on the server
          * @param info The parameters with the client data ID
          * @return True, if the new ID is created, else false with the last error set
@@ -73,10 +78,16 @@ namespace simconnect {
         Napi::Value mapClientDataNameToId(const Napi::CallbackInfo& info);
         /**
          * @brief Adds a new client data definition
-         * @param info The info block with parameters for the client data ID and the data definition
+         * @param info The info block with parameter the data definition
          * @return True if the definition is added, else false
          */
         Napi::Value addClientDataDefinition(const Napi::CallbackInfo& info);
+        /**
+         * @brief Clears a client data definition
+         * @param info The info block with the parameter for data definition name
+         * @return True if the definition is cleared, else false
+         */
+        Napi::Value clearClientDataDefinition(const Napi::CallbackInfo& info);
         /**
          * @brief Creates anew client data area on the server
          * @param info The info block with the paramaters clientDataId, size and readOnly

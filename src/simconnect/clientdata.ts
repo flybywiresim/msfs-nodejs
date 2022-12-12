@@ -1,34 +1,31 @@
+import { ClientDataArea } from './clientdataarea';
 import { ClientDataDefinition } from './clientdatadefinition';
 
-const msfs = require('./libs/msfs');
+const { Wrapper } = require('./libs/simconnect');
 
 export class ClientData {
-    private dataId: number;
+    private wrapper: typeof Wrapper = null;
 
-    private constructor(name: string, dataId: number, datasize: number, readOnly: boolean) {
-        msfs.mapClientDataNameToId(name, dataId);
-        msfs.createClientData(dataId, datasize, readOnly);
-
-        this.dataId = dataId;
+    constructor(wrapper: typeof Wrapper) {
+        this.wrapper = wrapper;
     }
 
-    public static create(name: string, dataId: number, datasize: number, readOnly: boolean): Promise<ClientData> {
-        return new Promise<ClientData>((resolve, reject) => {
-            try {
-                const data = new ClientData(name, dataId, datasize, readOnly);
-                resolve(data);
-            } catch (err) {
-                reject(err);
-            }
-            return null;
-        });
+    public addDataDefinition(definition: ClientDataDefinition): boolean {
+        return this.wrapper.addClientDataDefinition(definition);
     }
 
-    public addDataDefinition(definition: ClientDataDefinition) {
-        msfs.addToClientDataDefinition(definition.dataDefinitionId, definition.offset, definition.sizeOrType, definition.epsilon);
+    public createDataArea(clientDataId: number, name: string, size: number, readOnly: boolean): ClientDataArea {
+        if (this.wrapper.newClientDataArea(clientDataId)) {
+            const instance = new ClientDataArea(this, clientDataId);
+            if (!instance.mapNameToId(name)) return null;
+            if (!instance.createDataArea(size, readOnly)) return null;
+            return instance;
+        }
+
+        return null;
     }
 
-    public setData(dataDefinition: number, data: Buffer): void {
-        msfs.setClientData(this.dataId, dataDefinition, data);
+    public errorMessage(): string {
+        return this.wrapper.errorMessage();
     }
 }

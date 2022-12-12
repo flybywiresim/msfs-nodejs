@@ -102,7 +102,7 @@ Napi::Value Wrapper::clearClientDataDefinition(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    const auto memberName = info[0].As<Napi::String>();
+    const auto memberName = info[0].As<Napi::String>().Utf8Value();
 
     for (auto it = this->_clientDataDefinitions.begin(); it != this->_clientDataDefinitions.end(); ++it) {
         if (it->memberName == memberName) {
@@ -233,22 +233,26 @@ Napi::Value Wrapper::setClientData(const Napi::CallbackInfo& info) {
 
     SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
     const auto data = info[1].As<Napi::Object>();
+    const auto props = data.GetPropertyNames();
 
-    bool dataSent = false;
+    for (std::uint32_t i = 0; i < props.Length(); i++) {
+        bool found = false;
 
-    for (const auto& dataDefinition : std::as_const(this->_clientDataDefinitions)) {
-        /* found a new member entry*/
-        if (data.Has(dataDefinition.memberName)) {
-            if (false == this->setClientDataField(clientDataId, dataDefinition, data)) {
-                return Napi::Boolean::New(env, false);
+        for (const auto& dataDefinition : std::as_const(this->_clientDataDefinitions)) {
+            if (props.Get(i).As<Napi::String>().Utf8Value() == dataDefinition.memberName) {
+                if (false == this->setClientDataField(clientDataId, dataDefinition, data)) {
+                    return Napi::Boolean::New(env, false);
+                }
+
+                found = true;
             }
+        }
 
-            dataSent = true;
+        if (false == found) {
+            this->_lastError = "Unable to find " + props.Get(i).As<Napi::String>().Utf8Value() + " in the data definitions";
+            return Napi::Boolean::New(env, false);
         }
     }
 
-    if (!dataSent) {
-        this->_lastError = "No member of the data found int the client data definitions";
-    }
-    return Napi::Boolean::New(env, dataSent);
+    return Napi::Boolean::New(env, true);
 }

@@ -16,7 +16,7 @@ namespace simconnect {
             DWORD offset;
             DWORD sizeOrType;
             float epsilon;
-            Napi::String memberName;
+            std::string memberName;
         };
 
         HANDLE _simConnect;

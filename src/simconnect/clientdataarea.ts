@@ -29,6 +29,6 @@ export class ClientDataArea {
     }
 
     public errorMessage(): string {
-        return this.wrapper.errorMessage();
+        return this.wrapper.lastError();
     }
 }

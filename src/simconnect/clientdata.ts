@@ -26,6 +26,6 @@ export class ClientData {
     }
 
     public errorMessage(): string {
-        return this.wrapper.errorMessage();
+        return this.wrapper.lastError();
     }
 }

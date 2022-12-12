@@ -136,7 +136,7 @@ Napi::Value Wrapper::createClientDataArea(const Napi::CallbackInfo& info) {
         Napi::TypeError::New(env, "Invalid argument type. 'size' must be a number").ThrowAsJavaScriptException();
         return env.Null();
     }
-    if (!info[1].IsBoolean()) {
+    if (!info[2].IsBoolean()) {
         Napi::TypeError::New(env, "Invalid argument type. 'readOnly' must be a boolean").ThrowAsJavaScriptException();
         return env.Null();
     }

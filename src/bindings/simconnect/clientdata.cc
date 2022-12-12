@@ -28,7 +28,7 @@ Napi::Value Wrapper::mapClientDataNameToId(const Napi::CallbackInfo& info) {
     }
 
     std::string clientDataNameStr = clientDataName.Utf8Value();
-    HRESULT result = SimConnect_MapClientDataNameToID(&this->_simConnect, clientDataNameStr.c_str(), clientDataId);
+    HRESULT result = SimConnect_MapClientDataNameToID(this->_simConnect, clientDataNameStr.c_str(), clientDataId);
     if (result != S_OK) {
         this->_lastError = "Unable to map the client data ID: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
         return Napi::Boolean::New(env, false);

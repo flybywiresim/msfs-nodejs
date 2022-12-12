@@ -100,6 +100,7 @@ namespace simconnect {
          * @return True if all entries in the data definition are set, else False
          */
         Napi::Value setClientData(const Napi::CallbackInfo& info);
+        void nextDispatch(const Napi::CallbackInfo& info);
         /**
          * @brief Returns the last error of an other call
          * @param info The parameter block without additional parameters

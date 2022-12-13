@@ -1,6 +1,7 @@
 # compiled output
 /dist
 /node_modules
+/src/node_modules
 /build
 /src/bindings/simconnect/build
 

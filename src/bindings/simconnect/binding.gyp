@@ -3,9 +3,8 @@
     {
       "target_name": "simconnect",
       "sources": [
-        "clientdata.cc",
+        "clientdataarea.cc",
         "connection.cc",
-        "dispatch.cc",
         "helper.cc",
         "simconnect.cc",
         "wrapper.cc"

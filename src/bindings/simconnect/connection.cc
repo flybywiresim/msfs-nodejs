@@ -48,7 +48,7 @@ Napi::Value Connection::open(const Napi::CallbackInfo& info) {
         std::string nameStr = name.Utf8Value();
         HRESULT result = SimConnect_Open(&this->_simConnect, nameStr.c_str(), nullptr, 0, 0, 0);
         if (result != S_OK) {
-            this->_lastError = "Unable to open a Wrapper: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+            this->_lastError = "Unable to open a connection: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
             return Napi::Boolean::New(env, false);
         }
     }
@@ -57,12 +57,24 @@ Napi::Value Connection::open(const Napi::CallbackInfo& info) {
 }
 
 void Connection::close(const Napi::CallbackInfo& info) {
-    std::ignore = info;
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 0) {
+        Napi::TypeError::New(env, "Parameters are not allowed").ThrowAsJavaScriptException();
+        return;
+    }
+
     this->close();
 }
 
 Napi::Value Connection::isConnected(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
+
+    if (info.Length() != 0) {
+        Napi::TypeError::New(env, "Parameters are not allowed").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     return Napi::Boolean::New(env, this->_simConnect != 0);
 }
 
@@ -77,6 +89,11 @@ bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) cons
 
 Napi::Value Connection::newClientDataArea(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
+
+    if (this->_simConnect == 0) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
 
     if (info.Length() != 1) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
@@ -100,6 +117,11 @@ Napi::Value Connection::newClientDataArea(const Napi::CallbackInfo& info) {
 
 Napi::Value Connection::addClientDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
+
+    if (this->_simConnect == 0) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
 
     if (info.Length() != 1) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
@@ -154,6 +176,11 @@ Napi::Value Connection::addClientDataDefinition(const Napi::CallbackInfo& info) 
 Napi::Value Connection::clearClientDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
+    if (this->_simConnect == 0) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     if (info.Length() != 1) {
         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
         return env.Null();
@@ -184,6 +211,12 @@ Napi::Value Connection::clearClientDataDefinition(const Napi::CallbackInfo& info
 
 Napi::Value Connection::lastError(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
+
+    if (info.Length() != 0) {
+        Napi::TypeError::New(env, "Parameters are not allowed").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     return Napi::String::New(env, this->_lastError);
 }
 

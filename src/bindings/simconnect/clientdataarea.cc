@@ -4,8 +4,6 @@
 
 using namespace msfs::simconnect;
 
-Napi::FunctionReference ClientDataArea::constructor = Napi::FunctionReference();
-
 ClientDataArea::ClientDataArea(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<ClientDataArea>(info),
         _connection(nullptr),

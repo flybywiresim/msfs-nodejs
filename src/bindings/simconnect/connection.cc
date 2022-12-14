@@ -87,34 +87,6 @@ bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) cons
     return false;
 }
 
-Napi::Value Connection::newClientDataArea(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-
-    if (this->_simConnect == 0) {
-        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    if (info.Length() != 1) {
-        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[0].IsNumber()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'clientDataId' must be a number").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    const SIMCONNECT_CLIENT_DATA_ID clientDataId = info[0].As<Napi::Number>().Uint32Value();
-
-    if (this->clientDataIdExists(clientDataId) == true) {
-        this->_lastError = "Client data ID is already in use";
-        return Napi::Boolean::New(env, false);
-    }
-
-    this->_clientDataIds.push_back(clientDataId);
-    return Napi::Boolean::New(env, true);
-}
-
 Napi::Value Connection::addClientDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -225,7 +197,6 @@ Napi::Object Connection::initialize(Napi::Env env, Napi::Object exports) {
         InstanceMethod<&Connection::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::isConnected>("isConnected", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&Connection::newClientDataArea>("newClientDataArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::addClientDataDefinition>("addClientDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::clearClientDataDefinition>("clearClientDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),

@@ -55,12 +55,6 @@ namespace simconnect {
          */
         Napi::Value isConnected(const Napi::CallbackInfo& info);
         /**
-         * @brief Creates a new client data area without registering it on the server
-         * @param info The parameters with the client data ID
-         * @return True, if the new ID is created, else false with the last error set
-         */
-        Napi::Value newClientDataArea(const Napi::CallbackInfo& info);
-        /**
          * @brief Adds a new client data definition
          * @param info The info block with parameter the data definition
          * @return True if the definition is added, else false

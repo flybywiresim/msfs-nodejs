@@ -10,7 +10,7 @@ Connection::Connection(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Connection>(info),
         _simConnect(0),
         _lastError(),
-        _clientDataIds(),
+        _clientDataIds({ 0 }),
         _clientDataDefinitionIdCounter(),
         _clientDataDefinitions() { }
 
@@ -28,6 +28,7 @@ void Connection::close() {
 
     this->_clientDataDefinitionIdCounter = 1;
     this->_clientDataDefinitions.clear();
+    this->_clientDataIds = { 0 };
 }
 
 Napi::Value Connection::open(const Napi::CallbackInfo& info) {

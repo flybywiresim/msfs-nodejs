@@ -1,5 +1,5 @@
-#include "helper.h"
 #include "connection.h"
+#include "helper.h"
 
 #include <SimConnect.h>
 

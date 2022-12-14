@@ -6,8 +6,6 @@
 
 using namespace msfs::simconnect;
 
-Napi::FunctionReference Connection::constructor = Napi::FunctionReference();
-
 Connection::Connection(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Connection>(info),
         _simConnect(0),

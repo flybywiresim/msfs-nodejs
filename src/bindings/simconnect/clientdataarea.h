@@ -39,6 +39,12 @@ namespace simconnect {
          * @return True if all entries in the data definition are set, else False
          */
         Napi::Value setData(const Napi::CallbackInfo& info);
+        /**
+         * @brief Returns the last error of an other call
+         * @param info The parameter block without additional parameters
+         * @return Returns Napi::String with the last error
+         */
+        Napi::Value lastError(const Napi::CallbackInfo& info);
 
         static Napi::Object initialize(Napi::Env env, Napi::Object exports);
     };

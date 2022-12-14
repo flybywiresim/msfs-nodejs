@@ -194,11 +194,23 @@ Napi::Value ClientDataArea::setData(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, true);
 }
 
+Napi::Value ClientDataArea::lastError(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 0) {
+        Napi::TypeError::New(env, "Parameters are not allowed").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return Napi::String::New(env, this->_lastError);
+}
+
 Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "ClientDataArea", {
         InstanceMethod<&ClientDataArea::mapNameToId>("mapNameToId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::allocateArea>("allocateArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::setData>("setData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&ClientDataArea::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });
 
     Napi::FunctionReference* constructor = new Napi::FunctionReference();

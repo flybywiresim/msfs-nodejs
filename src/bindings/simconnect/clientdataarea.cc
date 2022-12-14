@@ -9,7 +9,32 @@ ClientDataArea::ClientDataArea(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<ClientDataArea>(info),
         _connection(nullptr),
         _id(0),
-        _lastError() { }
+        _lastError() {
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 2) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return;
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'connection' must be an object of type Connection").ThrowAsJavaScriptException();
+        return;
+    }
+    if (!info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'clientDataId' must be a number").ThrowAsJavaScriptException();
+        return;
+    }
+
+    this->_connection = Napi::ObjectWrap<Connection>::Unwrap(info[0].As<Napi::Object>());
+    this->_id = static_cast<SIMCONNECT_CLIENT_DATA_ID>(info[1].As<Napi::Number>().Uint32Value());
+
+    if (this->_connection->clientDataIdExists(this->_id)) {
+        Napi::TypeError::New(env, "The client data ID already exists").ThrowAsJavaScriptException();
+        return;
+    }
+
+    this->_connection->_clientDataIds.push_back(this->_id);
+}
 
 Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();

@@ -6,8 +6,7 @@
         "clientdataarea.cc",
         "connection.cc",
         "helper.cc",
-        "simconnect.cc",
-        "wrapper.cc"
+        "simconnect.cc"
       ],
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],

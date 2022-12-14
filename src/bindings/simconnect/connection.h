@@ -25,7 +25,7 @@ namespace simconnect {
 
         HANDLE _simConnect;
         std::string _lastError;
-        std::list<ClientDataArea*> _clientDataIds;
+        std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
         SIMCONNECT_CLIENT_DATA_DEFINITION_ID _clientDataDefinitionIdCounter;
         std::list<ClientDataDefinition> _clientDataDefinitions;
 

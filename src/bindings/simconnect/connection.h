@@ -29,8 +29,6 @@ namespace simconnect {
         SIMCONNECT_CLIENT_DATA_DEFINITION_ID _clientDataDefinitionIdCounter;
         std::list<ClientDataDefinition> _clientDataDefinitions;
 
-        static Napi::FunctionReference constructor;
-
         bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
         void close();
 

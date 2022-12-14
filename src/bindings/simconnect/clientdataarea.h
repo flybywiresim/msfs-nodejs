@@ -12,8 +12,6 @@ namespace simconnect {
         SIMCONNECT_CLIENT_DATA_ID _id;
         std::string _lastError;
 
-        static Napi::FunctionReference constructor;
-
         template <typename T>
         bool setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId,
                                  const Napi::Value& value);

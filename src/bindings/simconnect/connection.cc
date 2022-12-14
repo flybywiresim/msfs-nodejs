@@ -1,5 +1,6 @@
 #include "connection.h"
 #include "helper.h"
+#include "instancedata.h"
 
 #include <SimConnect.h>
 
@@ -231,8 +232,9 @@ Napi::Object Connection::initialize(Napi::Env env, Napi::Object exports) {
         InstanceMethod<&Connection::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });
 
-    Connection::constructor = Napi::Persistent(func);
-    Connection::constructor.SuppressDestruct();
+    Napi::FunctionReference* constructor = new Napi::FunctionReference();
+    *constructor = Napi::Persistent(func);
+    env.GetInstanceData<InstanceData>()->connectionConstructor = constructor;
 
     exports.Set("Connection", func);
     return exports;

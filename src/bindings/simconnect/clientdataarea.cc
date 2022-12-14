@@ -1,5 +1,6 @@
 #include "clientdataarea.h"
 #include "helper.h"
+#include "instancedata.h"
 
 using namespace msfs::simconnect;
 
@@ -161,8 +162,9 @@ Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
         InstanceMethod<&ClientDataArea::setData>("setData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });
 
-    ClientDataArea::constructor = Napi::Persistent(func);
-    ClientDataArea::constructor.SuppressDestruct();
+    Napi::FunctionReference* constructor = new Napi::FunctionReference();
+    *constructor = Napi::Persistent(func);
+    env.GetInstanceData<InstanceData>()->clientDataAreaConstructor = constructor;
 
     exports.Set("ClientDataArea", func);
     return exports;

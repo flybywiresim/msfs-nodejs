@@ -206,7 +206,7 @@ Napi::Value ClientDataArea::lastError(const Napi::CallbackInfo& info) {
 }
 
 Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
-    Napi::Function func = DefineClass(env, "ClientDataArea", {
+    Napi::Function func = DefineClass(env, "ClientDataAreaBindings", {
         InstanceMethod<&ClientDataArea::mapNameToId>("mapNameToId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::allocateArea>("allocateArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::setData>("setData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -217,6 +217,6 @@ Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
     *constructor = Napi::Persistent(func);
     env.GetInstanceData<InstanceData>()->clientDataAreaConstructor = constructor;
 
-    exports.Set("ClientDataArea", func);
+    exports.Set("ClientDataAreaBindings", func);
     return exports;
 }

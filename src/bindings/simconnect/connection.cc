@@ -193,7 +193,7 @@ Napi::Value Connection::lastError(const Napi::CallbackInfo& info) {
 }
 
 Napi::Object Connection::initialize(Napi::Env env, Napi::Object exports) {
-    Napi::Function func = DefineClass(env, "Connection", {
+    Napi::Function func = DefineClass(env, "ConnectionBindings", {
         InstanceMethod<&Connection::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Connection::isConnected>("isConnected", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -206,6 +206,6 @@ Napi::Object Connection::initialize(Napi::Env env, Napi::Object exports) {
     *constructor = Napi::Persistent(func);
     env.GetInstanceData<InstanceData>()->connectionConstructor = constructor;
 
-    exports.Set("Connection", func);
+    exports.Set("ConnectionBindings", func);
     return exports;
 }

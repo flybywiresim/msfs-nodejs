@@ -1,34 +1,16 @@
-import { ClientData } from './clientdata';
+import { ClientDataDefinition } from './clientdatadefinition';
 
-const { Wrapper } = require('./libs/simconnect');
+const simconnect = require('./libs/simconnect');
 
-export class Connection {
-    private wrapper: typeof Wrapper = null;
-
-    private clientDataManagement: ClientData = null;
-
-    constructor() {
-        this.wrapper = new Wrapper();
-        this.clientDataManagement = new ClientData(this.wrapper);
-    }
-
-    public open(clientName: string): boolean {
-        return this.wrapper.open(clientName);
-    }
-
-    public close(): void {
-        this.wrapper.close();
-    }
-
-    public isConnected(): boolean {
-        return this.wrapper.isConnected();
-    }
-
-    public clientData(): ClientData {
-        return this.clientDataManagement;
-    }
-
-    public errorMessage(): string {
-        return this.wrapper.lastError();
-    }
+export interface Connection {
+    open(clientName: string): boolean;
+    close(): void;
+    isConnected(): boolean;
+    addClientDataDefinition(definition: ClientDataDefinition): boolean;
+    clearClientDataDefinition(memberName: string): boolean;
+    lastError(): string;
 }
+
+export const Connection: {
+    new(): Connection
+} = simconnect.ConnectionBindings;

@@ -1,6 +1,7 @@
 'use strict';
 
 import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import copy from 'rollup-plugin-copy';
 import typescript from 'rollup-plugin-typescript2';
 
@@ -26,6 +27,7 @@ export default {
             useTsconfigDeclarationDir: true,
             exclude: ['**/*.test.ts', '**/*.spec.ts'],
         }),
+        resolve(),
         copy({
             targets: [
                 { src: 'src/bindings/simconnect/build/Release/simconnect.node', dest: 'dist/libs/' },

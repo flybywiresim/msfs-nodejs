@@ -1,20 +1,12 @@
-export class Dispatcher {
-    private timer: NodeJS.Timer = null;
+import { Connection } from './connection';
 
-    public start(): void {
-        if (this.timer === null) {
-            this.timer = setInterval(() => this.nextDispatch(), 50);
-        }
-    }
+const simconnect = require('./libs/simconnect');
 
-    public stop(): void {
-        if (this.timer !== null) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    }
-
-    private nextDispatch(): void {
-
-    }
+export interface Dispatcher {
+    nextDispatch(): object;
+    lastError(): string;
 }
+
+export const Dispatcher: {
+    new(connection: Connection): Dispatcher
+} = simconnect.DispatcherBindings;

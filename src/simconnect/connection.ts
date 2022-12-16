@@ -1,4 +1,4 @@
-import { ClientDataDefinition } from './clientdatadefinition';
+import { ClientDataDefinition } from './types';
 
 const simconnect = require('./libs/simconnect');
 

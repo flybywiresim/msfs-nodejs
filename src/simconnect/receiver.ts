@@ -13,7 +13,11 @@ export class Receiver {
 
     private interval: NodeJS.Timer = null;
 
-    private callbacks: { [eventName in keyof ReceiverCallbacks]?: ReceiverCallbacks[eventName] }
+    private callbacks: ReceiverCallbacks = {
+        open: null,
+        quit: null,
+        error: null,
+    }
 
     constructor(connection: Connection) {
         this.dispatcher = new Dispatcher(connection);

@@ -1,9 +1,10 @@
 import { Connection } from './connection';
+import { DispatcherResponse } from './types';
 
 const simconnect = require('./libs/simconnect');
 
 export interface Dispatcher {
-    nextDispatch(): object;
+    nextDispatch(): DispatcherResponse;
     lastError(): string;
 }
 

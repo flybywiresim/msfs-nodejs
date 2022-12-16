@@ -5,6 +5,11 @@ export interface ClientDataDefinition {
     memberName: string;
 }
 
+export interface DispatcherResponse {
+    type: string;
+    data: object;
+}
+
 export interface Version {
     major: number;
     minor: number;

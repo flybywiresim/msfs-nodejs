@@ -10,12 +10,6 @@ export interface Version {
     minor: number;
 }
 
-export interface ErrorMessage {
-    id: number;
-    size: number;
-    version: number;
-}
-
 export interface OpenMessage {
     application: {
         name: string;
@@ -26,4 +20,10 @@ export interface OpenMessage {
         version: Version;
         build: Version;
     }
+}
+
+export interface ErrorMessage {
+    id: number;
+    size: number;
+    version: number;
 }

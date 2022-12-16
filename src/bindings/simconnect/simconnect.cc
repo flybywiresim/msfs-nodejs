@@ -1,6 +1,7 @@
 #include <napi.h>
 
 #include "clientdataarea.h"
+#include "dispatcher.h"
 #include "instancedata.h"
 
 using namespace msfs::simconnect;
@@ -12,6 +13,7 @@ Napi::Object initialize(Napi::Env env, Napi::Object exports) {
 
     exports = Connection::initialize(env, exports);
     exports = ClientDataArea::initialize(env, exports);
+    exports = Dispatcher::initialize(env, exports);
 
     return exports;
 }

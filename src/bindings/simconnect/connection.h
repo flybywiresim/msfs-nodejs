@@ -10,9 +10,11 @@
 namespace msfs {
 namespace simconnect {
     class ClientDataArea;
+    class Dispatcher;
 
     class Connection : public Napi::ObjectWrap<Connection> {
         friend ClientDataArea;
+        friend Dispatcher;
 
     private:
         struct ClientDataDefinition {

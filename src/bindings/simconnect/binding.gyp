@@ -5,6 +5,7 @@
       "sources": [
         "clientdataarea.cc",
         "connection.cc",
+        "dispatcher.cc",
         "helper.cc",
         "simconnect.cc"
       ],

@@ -1,5 +1,6 @@
 #include <napi.h>
 
+#include "connection.h"
 #include "clientdataarea.h"
 #include "dispatcher.h"
 #include "instancedata.h"

@@ -21,31 +21,31 @@ Dispatcher::Dispatcher(const Napi::CallbackInfo& info) :
     this->_connection = Napi::ObjectWrap<Connection>::Unwrap(info[0].As<Napi::Object>());
 }
 
-Napi::Object Dispatcher::convertReceiveOpen(Napi::Env env, SIMCONNECT_RECV_OPEN* open) {
+Napi::Object Dispatcher::convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN* message) {
     Napi::Object object = Napi::Object::New(env);
 
     // set application data
     auto application = Napi::Object::New(env);
-    application.Set(Napi::String::New(env, "name"), Napi::String::New(env, open->szApplicationName));
+    application.Set(Napi::String::New(env, "name"), Napi::String::New(env, message->szApplicationName));
     auto version = Napi::Object::New(env);
-    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, open->dwApplicationVersionMajor));
-    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, open->dwApplicationVersionMinor));
+    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, message->dwApplicationVersionMajor));
+    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, message->dwApplicationVersionMinor));
     application.Set(Napi::String::New(env, "version"), version);
     version = Napi::Object::New(env);
-    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, open->dwApplicationBuildMajor));
-    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, open->dwApplicationBuildMinor));
+    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, message->dwApplicationBuildMajor));
+    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, message->dwApplicationBuildMinor));
     application.Set(Napi::String::New(env, "build"), version);
     object.Set(Napi::String::New(env, "application"), application);
 
     // set simconnect data
     auto simconnect = Napi::Object::New(env);
     version = Napi::Object::New(env);
-    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, open->dwSimConnectVersionMajor));
-    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, open->dwSimConnectVersionMinor));
+    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, message->dwSimConnectVersionMajor));
+    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, message->dwSimConnectVersionMinor));
     simconnect.Set(Napi::String::New(env, "version"), version);
     version = Napi::Object::New(env);
-    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, open->dwSimConnectBuildMajor));
-    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, open->dwSimConnectBuildMinor));
+    version.Set(Napi::String::New(env, "major"), Napi::Number::New(env, message->dwSimConnectBuildMajor));
+    version.Set(Napi::String::New(env, "minor"), Napi::Number::New(env, message->dwSimConnectBuildMinor));
     simconnect.Set(Napi::String::New(env, "build"), version);
     object.Set(Napi::String::New(env, "simconnect"), simconnect);
 
@@ -78,7 +78,7 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
 
     switch (receiveData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-        object.Set(Napi::String::New(env, "data"), Dispatcher::convertReceiveOpen(env, static_cast<SIMCONNECT_RECV_OPEN*>(receiveData)));
+        object.Set(Napi::String::New(env, "data"), Dispatcher::convertOpenMessage(env, static_cast<SIMCONNECT_RECV_OPEN*>(receiveData)));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "open"));
         break;
     case SIMCONNECT_RECV_ID_QUIT:

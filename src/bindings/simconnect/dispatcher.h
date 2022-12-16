@@ -12,6 +12,7 @@ namespace simconnect {
         std::string _lastError;
 
         static Napi::Object convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN* message);
+        static Napi::Object convertUnknownMessage(Napi::Env env, SIMCONNECT_RECV* message);
 
     public:
         Dispatcher(const Napi::CallbackInfo& info);

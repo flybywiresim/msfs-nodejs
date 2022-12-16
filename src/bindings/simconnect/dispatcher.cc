@@ -52,6 +52,16 @@ Napi::Object Dispatcher::convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN*
     return object;
 }
 
+Napi::Object Dispatcher::convertUnknownMessage(Napi::Env env, SIMCONNECT_RECV* message) {
+    Napi::Object object = Napi::Object::New(env);
+
+    object.Set(Napi::String::New(env, "id"), Napi::Number::New(env, message->dwID));
+    object.Set(Napi::String::New(env, "size"), Napi::Number::New(env, message->dwSize));
+    object.Set(Napi::String::New(env, "version"), Napi::Number::New(env, message->dwVersion));
+
+    return object;
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -86,8 +96,8 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "quit"));
         break;
     default:
-        object.Set(Napi::String::New(env, "data"), Napi::Object::New(env));
-        object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "unknown"));
+        object.Set(Napi::String::New(env, "data"), Dispatcher::convertUnknownMessage(env, receiveData));
+        object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "error"));
         break;
     }
 

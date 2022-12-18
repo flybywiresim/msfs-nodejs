@@ -28,6 +28,13 @@ export interface OpenMessage {
     }
 }
 
+export interface ExceptionMessage {
+    exception: number;
+    exceptionText: string;
+    sendId: number;
+    index: number;
+}
+
 export interface ErrorMessage {
     id: number;
     size: number;

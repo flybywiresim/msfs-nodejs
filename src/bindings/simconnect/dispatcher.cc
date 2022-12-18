@@ -62,6 +62,17 @@ Napi::Object Dispatcher::convertUnknownMessage(Napi::Env env, SIMCONNECT_RECV* m
     return object;
 }
 
+Napi::Object Dispatcher::convertExceptionMessage(Napi::Env env, SIMCONNECT_RECV_EXCEPTION* message) {
+    Napi::Object object = Napi::Object::New(env);
+
+    object.Set(Napi::String::New(env, "exception"), Napi::Number::New(env, message->dwException));
+    object.Set(Napi::String::New(env, "exceptionText"), Napi::String::New(env, Helper::translateException(static_cast<SIMCONNECT_EXCEPTION>(message->dwException))));
+    object.Set(Napi::String::New(env, "sendId"), Napi::Number::New(env, message->dwSendID));
+    object.Set(Napi::String::New(env, "index"), Napi::Number::New(env, message->dwIndex));
+
+    return object;
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -94,6 +105,10 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     case SIMCONNECT_RECV_ID_QUIT:
         object.Set(Napi::String::New(env, "data"), Napi::Object::New(env));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "quit"));
+        break;
+    case SIMCONNECT_RECV_ID_EXCEPTION:
+        object.Set(Napi::String::New(env, "data"), Dispatcher::convertExceptionMessage(env, static_cast<SIMCONNECT_RECV_EXCEPTION*>(receiveData)));
+        object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "exception"));
         break;
     default:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertUnknownMessage(env, receiveData));

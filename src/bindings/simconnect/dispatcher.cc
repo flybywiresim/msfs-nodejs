@@ -6,7 +6,9 @@ using namespace msfs::simconnect;
 
 Dispatcher::Dispatcher(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Dispatcher>(info),
-        _connection(nullptr) {
+        _connection(nullptr),
+        _requestedClientAreas(),
+        _lastError() {
     Napi::Env env = info.Env();
 
     if (info.Length() != 1) {
@@ -73,11 +75,57 @@ Napi::Object Dispatcher::convertExceptionMessage(Napi::Env env, SIMCONNECT_RECV_
     return object;
 }
 
+Napi::Value Dispatcher::requestClientData(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_connection->isConnected() == false) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (info.Length() != 3) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'clientDataArea' must be an object of type ClientDataArea").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'period' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'flag' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    auto clientDataArea = Napi::ObjectWrap<ClientDataArea>::Unwrap(info[0].As<Napi::Object>());
+    const auto period = static_cast<SIMCONNECT_CLIENT_DATA_PERIOD>(info[1].As<Napi::Number>().Uint32Value());
+    const auto flag = static_cast<SIMCONNECT_DATA_REQUEST_FLAG>(info[2].As<Napi::Number>().Uint32Value());
+
+    /* check if area is already in -> update flags, etc */
+    for (auto area : this->_requestedClientAreas) {
+        if (area->id() == clientDataArea->id()) {
+            auto retval = area->updateRequestData(period, flag);
+            return Napi::Boolean::New(env, retval);
+        }
+    }
+
+    auto retval = clientDataArea->requestData(this->_requestId, period, flag);
+    if (retval) {
+        this->_requestedClientAreas.push_back(clientDataArea);
+    }
+
+    return Napi::Boolean::New(env, retval);
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     if (!this->_connection->isConnected()) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        this->_requestedClientAreas.clear();
         return env.Null();
     }
 

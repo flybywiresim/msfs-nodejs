@@ -32,6 +32,11 @@ namespace simconnect {
         ClientDataArea(const Napi::CallbackInfo& info);
 
         /**
+         * @brief Returns the client data ID
+         * @return The client data ID
+         */
+        const SIMCONNECT_CLIENT_DATA_ID& id() const;
+        /**
          * @brief Maps the client data name to the ID on the server
          * @param info The info block with the parameter for the clientDataName
          * @return True if the mapping was successful, else false with the last error set

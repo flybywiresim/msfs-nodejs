@@ -7,7 +7,7 @@
 namespace msfs {
 namespace simconnect {
     class ClientDataArea : public Napi::ObjectWrap<ClientDataArea> {
-    private:
+    public:
         struct ClientDataDefinition {
             SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId;
             SIMCONNECT_DATA_REQUEST_ID requestId;
@@ -17,6 +17,7 @@ namespace simconnect {
             std::string memberName;
         };
 
+    private:
         Connection* _connection;
         SIMCONNECT_CLIENT_DATA_ID _id;
         std::list<ClientDataDefinition> _clientDataDefinitions;
@@ -36,6 +37,7 @@ namespace simconnect {
          * @return The client data ID
          */
         const SIMCONNECT_CLIENT_DATA_ID& id() const;
+        const std::list<ClientDataDefinition>& definitions() const;
         /**
          * @brief Maps the client data name to the ID on the server
          * @param info The info block with the parameter for the clientDataName

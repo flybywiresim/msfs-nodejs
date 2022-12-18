@@ -41,6 +41,10 @@ const SIMCONNECT_CLIENT_DATA_ID& ClientDataArea::id() const {
     return this->_id;
 }
 
+const std::list<ClientDataArea::ClientDataDefinition>& ClientDataArea::definitions() const {
+    return this->_clientDataDefinitions;
+}
+
 Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 

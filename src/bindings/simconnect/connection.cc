@@ -9,6 +9,7 @@ using namespace msfs::simconnect;
 Connection::Connection(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Connection>(info),
         _simConnect(0),
+        _isConnected(false),
         _lastError(),
         _clientDataIds() { }
 
@@ -21,6 +22,7 @@ Connection::~Connection() {
 void Connection::close() {
     if (this->_simConnect != 0) {
         SimConnect_Close(this->_simConnect);
+        this->_isConnected = false;
         this->_simConnect = 0;
     }
 }
@@ -61,6 +63,10 @@ void Connection::close(const Napi::CallbackInfo& info) {
     this->close();
 }
 
+bool Connection::isConnected() const {
+    return this->_simConnect != 0 && this->_isConnected == true;
+}
+
 Napi::Value Connection::isConnected(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -69,7 +75,7 @@ Napi::Value Connection::isConnected(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    return Napi::Boolean::New(env, this->_simConnect != 0);
+    return Napi::Boolean::New(env, this->isConnected());
 }
 
 bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const {

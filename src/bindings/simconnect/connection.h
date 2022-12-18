@@ -18,11 +18,13 @@ namespace simconnect {
 
     private:
         HANDLE _simConnect;
+        bool _isConnected;
         std::string _lastError;
         std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
 
         bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
         void close();
+        bool isConnected() const;
 
     public:
         Connection(const Napi::CallbackInfo& info);

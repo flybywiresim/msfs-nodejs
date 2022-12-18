@@ -17,6 +17,9 @@ namespace simconnect {
         static Napi::Object convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN* message);
         static Napi::Object convertUnknownMessage(Napi::Env env, SIMCONNECT_RECV* message);
         static Napi::Object convertExceptionMessage(Napi::Env env, SIMCONNECT_RECV_EXCEPTION* message);
+        static Napi::Object convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_RECV_CLIENT_DATA* message,
+                                                         SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                                         const ClientDataArea::ClientDataDefinition& definition);
 
     public:
         Dispatcher(const Napi::CallbackInfo& info);

@@ -120,6 +120,36 @@ Napi::Value Dispatcher::requestClientData(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, retval);
 }
 
+#include <iostream>
+Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_RECV_CLIENT_DATA* message,
+                                                      SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                                      const ClientDataArea::ClientDataDefinition& definition) {
+    Napi::Object object = Napi::Object::New(env);
+
+    object.Set(Napi::String::New(env, "clientDataId"), Napi::Number::New(env, clientDataId));
+
+    switch (definition.sizeOrType) {
+    case SIMCONNECT_CLIENTDATATYPE_INT8:
+    case SIMCONNECT_CLIENTDATATYPE_INT16:
+    case SIMCONNECT_CLIENTDATATYPE_INT32:
+    case SIMCONNECT_CLIENTDATATYPE_INT64: {
+        std::int64_t* array = reinterpret_cast<std::int64_t*>(&message->dwData);
+        object.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
+    case SIMCONNECT_CLIENTDATATYPE_FLOAT32:
+    case SIMCONNECT_CLIENTDATATYPE_FLOAT64: {
+        double* array = reinterpret_cast<double*>(&message->dwData);
+        object.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
+    default:
+        std::cout << "SIZE: " << message->dwDefineCount * 8 << std::endl;
+    }
+
+    return object;
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -160,6 +190,30 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertExceptionMessage(env, static_cast<SIMCONNECT_RECV_EXCEPTION*>(receiveData)));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "exception"));
         break;
+    case SIMCONNECT_RECV_ID_CLIENT_DATA: {
+        SIMCONNECT_RECV_CLIENT_DATA* data = static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(receiveData);
+
+        bool found = false;
+        for (const auto& area : std::as_const(this->_requestedClientAreas)) {
+            for (const auto& definition : std::as_const(area->definitions())) {
+                if (definition.requestId == data->dwRequestID) {
+                    object.Set(Napi::String::New(env, "data"), Dispatcher::convertClientDataAreaMessage(env, data, area->id(), definition));
+                    object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "clientData"));
+                    found = true;
+                    break;
+                }
+            }
+
+            if (true == found) {
+                break;
+            }
+        }
+
+        if (false == found) {
+            return env.Null();
+        }
+        break;
+    }
     default:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertUnknownMessage(env, receiveData));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "error"));

@@ -55,6 +55,12 @@ namespace simconnect {
          */
         Napi::Value setData(const Napi::CallbackInfo& info);
         /**
+         * @brief Requests the data of the client data area
+         * @param info The info block with the parameters for the request IDs, the period flag and the flag
+         * @return True if the data is requested, else false
+         */
+        Napi::Value requestData(const Napi::CallbackInfo& info);
+        /**
          * @brief Returns the last error of an other call
          * @param info The parameter block without additional parameters
          * @return Returns Napi::String with the last error

@@ -13,23 +13,44 @@ namespace simconnect {
     class Dispatcher;
 
     class Connection : public Napi::ObjectWrap<Connection> {
-        friend ClientDataArea;
-        friend Dispatcher;
-
     private:
         HANDLE _simConnect;
         bool _isConnected;
         std::string _lastError;
         std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
 
-        bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
         void close();
-        bool isConnected() const;
 
     public:
         Connection(const Napi::CallbackInfo& info);
         ~Connection();
 
+        /**
+         * @brief Returns the current HANDLE for the connection
+         * @return The handle for the connection
+         */
+        HANDLE simConnect() const;
+        /**
+         * @brief Checks if the connection is established to the server
+         * @return True if the connection is established, else false
+         */
+        bool isConnected() const;
+        /**
+         * @brief Checks if a client data ID exists
+         * @param clientDataId The client data ID
+         * @return True if the ID is already registered, else false
+         */
+        bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
+        /**
+         * @brief Adds the client data ID to the managed list
+         * @param clientDataId The client data ID
+         */
+        void addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId);
+        /**
+         * @brief Marks if the connection with the server response is established
+         * @param established True if the server response was received, else false
+         */
+        void connectionEstablished(bool established);
         /**
          * @brief Opens a SimConnect connection to the server
          * @param info The callback block where the first element needs to be the client's name

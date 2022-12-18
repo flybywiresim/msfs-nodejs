@@ -34,7 +34,7 @@ ClientDataArea::ClientDataArea(const Napi::CallbackInfo& info) :
         return;
     }
 
-    this->_connection->_clientDataIds.push_back(this->_id);
+    this->_connection->addClientDataId(this->_id);
 }
 
 Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
@@ -57,7 +57,7 @@ Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     Napi::String clientDataName = info[0].As<Napi::String>();
 
     std::string clientDataNameStr = clientDataName.Utf8Value();
-    HRESULT result = SimConnect_MapClientDataNameToID(this->_connection->_simConnect, clientDataNameStr.c_str(), this->_id);
+    HRESULT result = SimConnect_MapClientDataNameToID(this->_connection->simConnect(), clientDataNameStr.c_str(), this->_id);
     if (result != S_OK) {
         this->_lastError = "Unable to map the client data ID";
         return Napi::Boolean::New(env, false);
@@ -118,7 +118,7 @@ Napi::Value ClientDataArea::addDataDefinition(const Napi::CallbackInfo& info) {
     definition.epsilon = definitionJS.Has("epsilon") ? definitionJS.Get("epsilon").As<Napi::Number>().FloatValue() : 0.0f;
     definition.memberName = definitionJS.Get("memberName").As<Napi::String>();
 
-    HRESULT result = SimConnect_AddToClientDataDefinition(this->_connection->_simConnect, definition.definitionId, definition.offset,
+    HRESULT result = SimConnect_AddToClientDataDefinition(this->_connection->simConnect(), definition.definitionId, definition.offset,
                                                           definition.sizeOrType, definition.epsilon);
     if (result != S_OK) {
         this->_lastError = "Unable to add the client data definition";
@@ -156,7 +156,7 @@ Napi::Value ClientDataArea::allocateArea(const Napi::CallbackInfo& info) {
         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY :
         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
 
-    HRESULT result = SimConnect_CreateClientData(this->_connection->_simConnect, this->_id, size, readOnlyFlag);
+    HRESULT result = SimConnect_CreateClientData(this->_connection->simConnect(), this->_id, size, readOnlyFlag);
     if (result != S_OK) {
         this->_lastError = "Unable to create the client data";
         return Napi::Boolean::New(env, false);
@@ -170,7 +170,7 @@ bool ClientDataArea::setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID de
                                          const Napi::Value& value) {
     auto number = static_cast<T>(value.As<Napi::Number>().DoubleValue());
 
-    HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definitionId,
+    HRESULT result = SimConnect_SetClientData(this->_connection->simConnect(), this->_id, definitionId,
                                               SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(T), &number);
     if (result != S_OK) {
         this->_lastError = "Unable to set client data";
@@ -204,7 +204,7 @@ bool ClientDataArea::setClientDataField(const ClientDataDefinition& definition,
         }
 
         Napi::ArrayBuffer buffer = value.As<Napi::ArrayBuffer>();
-        HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definition.definitionId,
+        HRESULT result = SimConnect_SetClientData(this->_connection->simConnect(), this->_id, definition.definitionId,
                                                   SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, buffer.ByteLength(), buffer.Data());
         if (result != S_OK) {
             this->_lastError = "Unable to set client data";
@@ -269,7 +269,7 @@ bool ClientDataArea::requestData(SIMCONNECT_DATA_REQUEST_ID& requestId, SIMCONNE
 
 bool ClientDataArea::updateRequestData(SIMCONNECT_CLIENT_DATA_PERIOD period, SIMCONNECT_DATA_REQUEST_FLAG flag) {
     for (auto& member : this->_clientDataDefinitions) {
-        HRESULT result = SimConnect_RequestClientData(this->_connection->_simConnect, this->_id, member.requestId,
+        HRESULT result = SimConnect_RequestClientData(this->_connection->simConnect(), this->_id, member.requestId,
                                                       member.definitionId, period, flag);
         if (result != S_OK) {
             this->_lastError = "Unable to request client data";

@@ -27,6 +27,18 @@ void Connection::close() {
     }
 }
 
+HANDLE Connection::simConnect() const {
+    return this->_simConnect;
+}
+
+void Connection::addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId) {
+    this->_clientDataIds.push_back(clientDataId);
+}
+
+void Connection::connectionEstablished(bool established) {
+    this->_isConnected = established;
+}
+
 Napi::Value Connection::open(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 

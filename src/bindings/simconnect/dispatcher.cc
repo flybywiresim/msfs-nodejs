@@ -76,7 +76,7 @@ Napi::Object Dispatcher::convertExceptionMessage(Napi::Env env, SIMCONNECT_RECV_
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (this->_connection->_simConnect == 0) {
+    if (!this->_connection->isConnected()) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -89,7 +89,7 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     SIMCONNECT_RECV* receiveData;
     DWORD size;
 
-    HRESULT result = SimConnect_GetNextDispatch(this->_connection->_simConnect, &receiveData, &size);
+    HRESULT result = SimConnect_GetNextDispatch(this->_connection->simConnect(), &receiveData, &size);
     if (result != S_OK) {
         return env.Null();
     }
@@ -101,12 +101,12 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     case SIMCONNECT_RECV_ID_OPEN:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertOpenMessage(env, static_cast<SIMCONNECT_RECV_OPEN*>(receiveData)));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "open"));
-        this->_connection->_isConnected = true;
+        this->_connection->connectionEstablished(true);
         break;
     case SIMCONNECT_RECV_ID_QUIT:
         object.Set(Napi::String::New(env, "data"), Napi::Object::New(env));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "quit"));
-        this->_connection->_isConnected = false;
+        this->_connection->connectionEstablished(false);
         break;
     case SIMCONNECT_RECV_ID_EXCEPTION:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertExceptionMessage(env, static_cast<SIMCONNECT_RECV_EXCEPTION*>(receiveData)));

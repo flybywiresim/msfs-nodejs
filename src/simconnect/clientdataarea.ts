@@ -1,3 +1,4 @@
+import { ClientDataDefinition } from './types';
 import { Connection } from './connection';
 
 const simconnect = require('./libs/simconnect');
@@ -5,6 +6,7 @@ const simconnect = require('./libs/simconnect');
 export interface ClientDataArea {
     mapNameToId(clientDataName: string): boolean;
     allocateArea(size: number, readOnly: boolean): boolean;
+    addDataDefinition(definition: ClientDataDefinition): boolean;
     setData(data: object): boolean;
     lastError(): string;
 }

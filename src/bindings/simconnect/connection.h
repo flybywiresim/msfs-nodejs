@@ -17,19 +17,9 @@ namespace simconnect {
         friend Dispatcher;
 
     private:
-        struct ClientDataDefinition {
-            SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId;
-            DWORD offset;
-            DWORD sizeOrType;
-            float epsilon;
-            std::string memberName;
-        };
-
         HANDLE _simConnect;
         std::string _lastError;
         std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
-        SIMCONNECT_CLIENT_DATA_DEFINITION_ID _clientDataDefinitionIdCounter;
-        std::list<ClientDataDefinition> _clientDataDefinitions;
 
         bool clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const;
         void close();
@@ -56,18 +46,6 @@ namespace simconnect {
          * @return True if the connection is active, else false
          */
         Napi::Value isConnected(const Napi::CallbackInfo& info);
-        /**
-         * @brief Adds a new client data definition
-         * @param info The info block with parameter the data definition
-         * @return True if the definition is added, else false
-         */
-        Napi::Value addClientDataDefinition(const Napi::CallbackInfo& info);
-        /**
-         * @brief Clears a client data definition
-         * @param info The info block with the parameter for data definition name
-         * @return True if the definition is cleared, else false
-         */
-        Napi::Value clearClientDataDefinition(const Napi::CallbackInfo& info);
         /**
          * @brief Creates anew client data area on the server
          * @param info The info block with the paramaters clientDataId, size and readOnly

@@ -8,14 +8,23 @@ namespace msfs {
 namespace simconnect {
     class ClientDataArea : public Napi::ObjectWrap<ClientDataArea> {
     private:
+        struct ClientDataDefinition {
+            SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId;
+            DWORD offset;
+            DWORD sizeOrType;
+            float epsilon;
+            std::string memberName;
+        };
+
         Connection* _connection;
         SIMCONNECT_CLIENT_DATA_ID _id;
+        std::list<ClientDataDefinition> _clientDataDefinitions;
         std::string _lastError;
 
         template <typename T>
         bool setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId,
                                  const Napi::Value& value);
-        bool setClientDataField(const Connection::ClientDataDefinition& definition,
+        bool setClientDataField(const ClientDataDefinition& definition,
                                 const Napi::Object& object);
 
     public:
@@ -27,6 +36,12 @@ namespace simconnect {
          * @return True if the mapping was successful, else false with the last error set
          */
         Napi::Value mapNameToId(const Napi::CallbackInfo& info);
+        /**
+         * @brief Adds a new client data definition
+         * @param info The info block with parameter the data definition
+         * @return True if the definition is added, else false
+         */
+        Napi::Value addDataDefinition(const Napi::CallbackInfo& info);
         /**
          * @brief Creates a new client data area on the server
          * @param info The info block with the parameters size and readOnly

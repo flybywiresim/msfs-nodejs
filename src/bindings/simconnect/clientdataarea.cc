@@ -65,6 +65,69 @@ Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, true);
 }
 
+Napi::Value ClientDataArea::addDataDefinition(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_connection->_simConnect == 0) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (info.Length() != 1) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'dataDefinition' must be an object").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    const auto definitionJS = info[0].As<Napi::Object>();
+    if (!definitionJS.Has("definitionId") || !definitionJS.Get("definitionId").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'definitionId' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("offset") || !definitionJS.Get("offset").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'offset' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("sizeOrType") || !definitionJS.Get("sizeOrType").IsNumber()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'sizeOrType' needs to be defined as a number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    /* optional property */
+    if (definitionJS.Has("epsilon") && !definitionJS.Get("epsilon").IsNumber()) {
+        Napi::TypeError::New(env, "Property is invalid. 'epsilon' needs to be defined as number")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!definitionJS.Has("memberName") || !definitionJS.Get("memberName").IsString()) {
+        Napi::TypeError::New(env, "Property not found or invalid. 'memberName' needs to be defined as a string")
+            .ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    struct ClientDataDefinition definition;
+    definition.definitionId = definitionJS.Get("definitionId").As<Napi::Number>().Int32Value();
+    definition.offset = definitionJS.Get("offset").As<Napi::Number>().Int32Value();
+    definition.sizeOrType = definitionJS.Get("sizeOrType").As<Napi::Number>().Int32Value();
+    definition.epsilon = definitionJS.Has("epsilon") ? definitionJS.Get("epsilon").As<Napi::Number>().FloatValue() : 0.0f;
+    definition.memberName = definitionJS.Get("memberName").As<Napi::String>();
+
+    HRESULT result = SimConnect_AddToClientDataDefinition(this->_connection->_simConnect, definition.definitionId, definition.offset,
+                                                          definition.sizeOrType, definition.epsilon);
+    if (result != S_OK) {
+        this->_lastError = "Unable to add the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        return Napi::Boolean::New(env, false);
+    }
+
+    this->_clientDataDefinitions.push_back(std::move(definition));
+    return Napi::Boolean::New(env, true);
+}
+
 Napi::Value ClientDataArea::allocateArea(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -107,7 +170,7 @@ bool ClientDataArea::setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID de
     auto number = static_cast<T>(value.As<Napi::Number>().DoubleValue());
 
     HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definitionId,
-                                              0, 0, sizeof(T), &number);
+                                              SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(T), &number);
     if (result != S_OK) {
         this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
         return false;
@@ -116,7 +179,7 @@ bool ClientDataArea::setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID de
     return true;
 }
 
-bool ClientDataArea::setClientDataField(const Connection::ClientDataDefinition& definition,
+bool ClientDataArea::setClientDataField(const ClientDataDefinition& definition,
                                         const Napi::Object& object) {
     switch (definition.sizeOrType) {
     case SIMCONNECT_CLIENTDATATYPE_INT8:
@@ -141,7 +204,7 @@ bool ClientDataArea::setClientDataField(const Connection::ClientDataDefinition& 
 
         Napi::ArrayBuffer buffer = value.As<Napi::ArrayBuffer>();
         HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definition.definitionId,
-                                                  0, 0, buffer.ByteLength(), buffer.Data());
+                                                  SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, buffer.ByteLength(), buffer.Data());
         if (result != S_OK) {
             this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
             return false;
@@ -175,7 +238,7 @@ Napi::Value ClientDataArea::setData(const Napi::CallbackInfo& info) {
     for (std::uint32_t i = 0; i < props.Length(); i++) {
         bool found = false;
 
-        for (const auto& dataDefinition : std::as_const(this->_connection->_clientDataDefinitions)) {
+        for (const auto& dataDefinition : std::as_const(this->_clientDataDefinitions)) {
             if (props.Get(i).As<Napi::String>().Utf8Value() == dataDefinition.memberName) {
                 if (false == this->setClientDataField(dataDefinition, data)) {
                     return Napi::Boolean::New(env, false);
@@ -209,6 +272,7 @@ Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "ClientDataAreaBindings", {
         InstanceMethod<&ClientDataArea::mapNameToId>("mapNameToId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::allocateArea>("allocateArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&ClientDataArea::addDataDefinition>("addDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::setData>("setData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });

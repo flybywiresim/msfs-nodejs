@@ -1,4 +1,5 @@
 export interface ClientDataDefinition {
+    definitionId: number;
     offset: number;
     sizeOrType: number;
     epsilon: number;

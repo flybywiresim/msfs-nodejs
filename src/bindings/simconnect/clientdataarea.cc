@@ -9,6 +9,7 @@ ClientDataArea::ClientDataArea(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<ClientDataArea>(info),
         _connection(nullptr),
         _id(0),
+        _clientDataDefinitions(),
         _lastError() {
     Napi::Env env = info.Env();
 

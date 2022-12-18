@@ -258,72 +258,26 @@ Napi::Value ClientDataArea::setData(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, true);
 }
 
-Napi::Value ClientDataArea::requestData(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-
-    if (this->_connection->isConnected() == false) {
-        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
-        return env.Null();
+bool ClientDataArea::requestData(SIMCONNECT_DATA_REQUEST_ID& requestId, SIMCONNECT_CLIENT_DATA_PERIOD period,
+                                 SIMCONNECT_DATA_REQUEST_FLAG flag) {
+    for (auto& member : this->_clientDataDefinitions) {
+        member.requestId = requestId++;
     }
 
-    if (info.Length() != 3) {
-        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[0].IsArray()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'requestIds' must be an array").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'period' must be a number").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    if (!info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Invalid argument type. 'flag' must be a number").ThrowAsJavaScriptException();
-        return env.Null();
-    }
+    return this->updateRequestData(period, flag);
+}
 
-    const auto requestIds = info[0].As<Napi::Array>();
-    const auto period = static_cast<SIMCONNECT_CLIENT_DATA_PERIOD>(info[1].As<Napi::Number>().Uint32Value());
-    const auto flag = static_cast<SIMCONNECT_DATA_REQUEST_FLAG>(info[2].As<Napi::Number>().Uint32Value());
-    for (std::uint32_t i = 0; i < requestIds.Length(); ++i) {
-        if (!requestIds[i].IsObject()) {
-            Napi::TypeError::New(env, "Invalid argument type in requestIds. Elements need to be objects and contain 'memberName' and 'requestId'").ThrowAsJavaScriptException();
-            return env.Null();
-        }
-
-        const auto object = requestIds[i].As<Napi::Object>();
-        if (!object.Has("memberName") || !object.Get("memberName").IsString()) {
-            Napi::TypeError::New(env, "Invalid argument type in requestIds. Elements need to be objects and contain 'memberName' and 'requestId'").ThrowAsJavaScriptException();
-            return env.Null();
-        }
-        if (!object.Has("requestId") || !object.Get("requestId").IsNumber()) {
-            Napi::TypeError::New(env, "Invalid argument type in requestIds. Elements need to be objects and contain 'memberName' and 'requestId'").ThrowAsJavaScriptException();
-            return env.Null();
-        }
-
-        const auto memberName = object.Get("memberName").As<Napi::String>().Utf8Value();
-        const auto requestId = static_cast<SIMCONNECT_DATA_REQUEST_FLAG>(object.Get("requestId").As<Napi::Number>().Uint32Value());
-        bool found = false;
-        for (const auto& member : std::as_const(this->_clientDataDefinitions)) {
-            if (member.memberName == memberName) {
-                HRESULT result = SimConnect_RequestClientData(this->_connection->_simConnect, this->_id, requestId,
-                                                              member.definitionId, period, flag);
-                if (result != S_OK) {
-                    this->_lastError = "Unable to request client data";
-                    return Napi::Boolean::New(env, false);
-                }
-                found = true;
-            }
-        }
-
-        if (found == false) {
-            Napi::TypeError::New(env, "Could not find the memberName in the client definitions").ThrowAsJavaScriptException();
-            return env.Null();
+bool ClientDataArea::updateRequestData(SIMCONNECT_CLIENT_DATA_PERIOD period, SIMCONNECT_DATA_REQUEST_FLAG flag) {
+    for (auto& member : this->_clientDataDefinitions) {
+        HRESULT result = SimConnect_RequestClientData(this->_connection->_simConnect, this->_id, member.requestId,
+                                                      member.definitionId, period, flag);
+        if (result != S_OK) {
+            this->_lastError = "Unable to request client data";
+            return false;
         }
     }
 
-    return Napi::Boolean::New(env, true);
+    return true;
 }
 
 Napi::Value ClientDataArea::lastError(const Napi::CallbackInfo& info) {
@@ -343,7 +297,6 @@ Napi::Object ClientDataArea::initialize(Napi::Env env, Napi::Object exports) {
         InstanceMethod<&ClientDataArea::allocateArea>("allocateArea", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::addDataDefinition>("addDataDefinition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::setData>("setData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&ClientDataArea::requestData>("requestData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&ClientDataArea::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });
 

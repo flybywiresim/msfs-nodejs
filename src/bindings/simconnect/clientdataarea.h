@@ -10,6 +10,7 @@ namespace simconnect {
     private:
         struct ClientDataDefinition {
             SIMCONNECT_CLIENT_DATA_DEFINITION_ID definitionId;
+            SIMCONNECT_DATA_REQUEST_ID requestId;
             DWORD offset;
             DWORD sizeOrType;
             float epsilon;
@@ -56,10 +57,20 @@ namespace simconnect {
         Napi::Value setData(const Napi::CallbackInfo& info);
         /**
          * @brief Requests the data of the client data area
-         * @param info The info block with the parameters for the request IDs, the period flag and the flag
-         * @return True if the data is requested, else false
+         * @param[in,out] requestId The request ID and will be updated with every call
+         * @param[in] period The period to request the data
+         * @param[in] flag The flag to request the data
+         * @return True if all fields are requested, else false
          */
-        Napi::Value requestData(const Napi::CallbackInfo& info);
+        bool requestData(SIMCONNECT_DATA_REQUEST_ID& requestId, SIMCONNECT_CLIENT_DATA_PERIOD period,
+                         SIMCONNECT_DATA_REQUEST_FLAG flag);
+        /**
+         * @brief Requests the data of the client data area with already existing request IDs
+         * @param[in] period The period to request the data
+         * @param[in] flag The flag to request the data
+         * @return True if all fields are requested, else false
+         */
+        bool updateRequestData(SIMCONNECT_CLIENT_DATA_PERIOD period, SIMCONNECT_DATA_REQUEST_FLAG flag);
         /**
          * @brief Returns the last error of an other call
          * @param info The parameter block without additional parameters

@@ -44,7 +44,7 @@ Napi::Value Connection::open(const Napi::CallbackInfo& info) {
         std::string nameStr = name.Utf8Value();
         HRESULT result = SimConnect_Open(&this->_simConnect, nameStr.c_str(), nullptr, 0, 0, 0);
         if (result != S_OK) {
-            this->_lastError = "Unable to open a connection: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+            this->_lastError = "Unable to open a connection";
             return Napi::Boolean::New(env, false);
         }
     }

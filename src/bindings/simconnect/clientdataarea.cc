@@ -59,7 +59,7 @@ Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     std::string clientDataNameStr = clientDataName.Utf8Value();
     HRESULT result = SimConnect_MapClientDataNameToID(this->_connection->_simConnect, clientDataNameStr.c_str(), this->_id);
     if (result != S_OK) {
-        this->_lastError = "Unable to map the client data ID: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        this->_lastError = "Unable to map the client data ID";
         return Napi::Boolean::New(env, false);
     }
 
@@ -121,7 +121,7 @@ Napi::Value ClientDataArea::addDataDefinition(const Napi::CallbackInfo& info) {
     HRESULT result = SimConnect_AddToClientDataDefinition(this->_connection->_simConnect, definition.definitionId, definition.offset,
                                                           definition.sizeOrType, definition.epsilon);
     if (result != S_OK) {
-        this->_lastError = "Unable to add the client data definition: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        this->_lastError = "Unable to add the client data definition";
         return Napi::Boolean::New(env, false);
     }
 
@@ -158,7 +158,7 @@ Napi::Value ClientDataArea::allocateArea(const Napi::CallbackInfo& info) {
 
     HRESULT result = SimConnect_CreateClientData(this->_connection->_simConnect, this->_id, size, readOnlyFlag);
     if (result != S_OK) {
-        this->_lastError = "Unable to create the client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        this->_lastError = "Unable to create the client data";
         return Napi::Boolean::New(env, false);
     }
 
@@ -173,7 +173,7 @@ bool ClientDataArea::setClientDataNumber(SIMCONNECT_CLIENT_DATA_DEFINITION_ID de
     HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definitionId,
                                               SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(T), &number);
     if (result != S_OK) {
-        this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+        this->_lastError = "Unable to set client data";
         return false;
     }
 
@@ -207,7 +207,7 @@ bool ClientDataArea::setClientDataField(const ClientDataDefinition& definition,
         HRESULT result = SimConnect_SetClientData(this->_connection->_simConnect, this->_id, definition.definitionId,
                                                   SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, buffer.ByteLength(), buffer.Data());
         if (result != S_OK) {
-            this->_lastError = "Unable to set client data: " + Helper::translateException((SIMCONNECT_EXCEPTION)result);
+            this->_lastError = "Unable to set client data";
             return false;
         }
 

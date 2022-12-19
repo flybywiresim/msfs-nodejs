@@ -1,8 +1,10 @@
 # compiled output
-/dist
+/dist/*.js*
+/dist/*.ts*
+/dist/*/*.ts*
+!/dist/libs/simconnect.node
 /node_modules
 /src/node_modules
-/build
 /src/bindings/simconnect/build
 
 # IDE - VSCode

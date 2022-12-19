@@ -153,7 +153,7 @@ Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (!this->_connection->isConnected()) {
+    if (this->_connection->simConnect() == 0) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         this->_requestedClientAreas.clear();
         return env.Null();

@@ -120,13 +120,14 @@ Napi::Value Dispatcher::requestClientData(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(env, retval);
 }
 
-#include <iostream>
 Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_RECV_CLIENT_DATA* message,
                                                       SIMCONNECT_CLIENT_DATA_ID clientDataId,
                                                       const ClientDataArea::ClientDataDefinition& definition) {
     Napi::Object object = Napi::Object::New(env);
 
     object.Set(Napi::String::New(env, "clientDataId"), Napi::Number::New(env, clientDataId));
+    Napi::Object content = Napi::Object::New(env);
+    object.Set(Napi::String::New(env, "content"), content);
 
     switch (definition.sizeOrType) {
     case SIMCONNECT_CLIENTDATATYPE_INT8:
@@ -134,17 +135,20 @@ Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_
     case SIMCONNECT_CLIENTDATATYPE_INT32:
     case SIMCONNECT_CLIENTDATATYPE_INT64: {
         std::int64_t* array = reinterpret_cast<std::int64_t*>(&message->dwData);
-        object.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
         break;
     }
     case SIMCONNECT_CLIENTDATATYPE_FLOAT32:
     case SIMCONNECT_CLIENTDATATYPE_FLOAT64: {
         double* array = reinterpret_cast<double*>(&message->dwData);
-        object.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
         break;
     }
-    default:
-        std::cout << "SIZE: " << message->dwDefineCount * 8 << std::endl;
+    default: {
+        Napi::ArrayBuffer output = Napi::ArrayBuffer::New(env, reinterpret_cast<void*>(&message->dwData), definition.sizeOrType);
+        content.Set(Napi::String::New(env, definition.memberName), output);
+        break;
+    }
     }
 
     return object;

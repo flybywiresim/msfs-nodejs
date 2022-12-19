@@ -24,7 +24,7 @@ export default {
         commonjs(),
         typescript({
             useTsconfigDeclarationDir: true,
-            exclude: ['**/*.test.ts', '**/*.spec.ts'],
+            exclude: ['**/*.test.ts', '**/*.spec.ts', 'examples/**/*.ts'],
         }),
         copy({
             targets: [

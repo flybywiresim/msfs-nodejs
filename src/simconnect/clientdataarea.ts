@@ -1,34 +1,16 @@
-import { ClientDataDefinition } from './clientdatadefinition';
+import { ClientDataDefinition } from './types';
+import { Connection } from './connection';
 
-const { Wrapper } = require('./libs/simconnect');
+const simconnect = require('./libs/simconnect');
 
-export class ClientDataArea {
-    private wrapper: typeof Wrapper = null;
-
-    private clientDataId: number;
-
-    constructor(wrapper: typeof Wrapper, clientDataId: number) {
-        this.wrapper = wrapper;
-        this.clientDataId = clientDataId;
-    }
-
-    public mapNameToId(name: string): boolean {
-        return this.wrapper.mapClientDataNameToId(this.clientDataId, name);
-    }
-
-    public addDataDefinition(definition: ClientDataDefinition): boolean {
-        return this.wrapper.addClientDataDefinition(definition);
-    }
-
-    public createDataArea(size: number, readOnly: boolean): boolean {
-        return this.wrapper.createClientDataArea(this.clientDataId, size, readOnly);
-    }
-
-    public setData(data: object): boolean {
-        return this.wrapper.setClientData(this.clientDataId, data);
-    }
-
-    public errorMessage(): string {
-        return this.wrapper.lastError();
-    }
+export interface ClientDataArea {
+    mapNameToId(clientDataName: string): boolean;
+    allocateArea(size: number, readOnly: boolean): boolean;
+    addDataDefinition(definition: ClientDataDefinition): boolean;
+    setData(data: object): boolean;
+    lastError(): string;
 }
+
+export const ClientDataArea: {
+    new(connection: Connection, clientDataId: number): ClientDataArea,
+} = simconnect.ClientDataAreaBindings;

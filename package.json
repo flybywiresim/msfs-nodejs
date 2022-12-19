@@ -1,6 +1,6 @@
 {
-  "name": "@devfs/msfs-nodejs",
-  "version": "0.0.2",
+  "name": "@flybywiresim/msfs-nodejs",
+  "version": "0.1.0",
   "description": "Wrapper around the MSFS SDK for Node.JS applications",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

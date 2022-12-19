@@ -236,6 +236,7 @@ Napi::Value Dispatcher::lastError(const Napi::CallbackInfo& info) {
 
 Napi::Object Dispatcher::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "DispatcherBindings", {
+        InstanceMethod<&Dispatcher::requestClientData>("requestClientData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::nextDispatch>("nextDispatch", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });

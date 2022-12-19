@@ -48,7 +48,7 @@ const std::list<ClientDataArea::ClientDataDefinition>& ClientDataArea::definitio
 Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (this->_connection->isConnected() == false) {
+    if (this->_connection->simConnect() == 0) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -77,7 +77,7 @@ Napi::Value ClientDataArea::mapNameToId(const Napi::CallbackInfo& info) {
 Napi::Value ClientDataArea::addDataDefinition(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (this->_connection->isConnected() == false) {
+    if (this->_connection->simConnect() == 0) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -140,7 +140,7 @@ Napi::Value ClientDataArea::addDataDefinition(const Napi::CallbackInfo& info) {
 Napi::Value ClientDataArea::allocateArea(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    if (this->_connection->isConnected() == false) {
+    if (this->_connection->simConnect() == 0) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         return env.Null();
     }

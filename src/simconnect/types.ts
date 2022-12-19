@@ -40,3 +40,8 @@ export interface ErrorMessage {
     size: number;
     version: number;
 }
+
+export interface ClientDataRequestMessage {
+    clientDataId: number;
+    content: object;
+}

@@ -1,10 +1,13 @@
+import { ClientDataArea } from './clientdataarea';
+import { ClientDataPeriod, ClientDataRequest } from './constants';
 import { Connection } from './connection';
 import { Dispatcher } from './dispatcher';
-import { ErrorMessage, ExceptionMessage, OpenMessage } from './types';
+import { ClientDataRequestMessage, ErrorMessage, ExceptionMessage, OpenMessage } from './types';
 
 export type ReceiverCallbacks = {
     open: (message: OpenMessage) => void;
     quit: () => void;
+    clientData: (message: ClientDataRequestMessage) => void;
     exception: (message: ExceptionMessage) => void;
     error: (message: ErrorMessage) => void;
 }
@@ -17,6 +20,7 @@ export class Receiver {
     private callbacks: ReceiverCallbacks = {
         open: null,
         quit: null,
+        clientData: null,
         exception: null,
         error: null,
     }
@@ -35,6 +39,9 @@ export class Receiver {
             break;
         case 'quit':
             if (this.callbacks.quit !== null) this.callbacks.quit();
+            break;
+        case 'clientData':
+            if (this.callbacks.clientData !== null) this.callbacks.clientData(response.data as ClientDataRequestMessage);
             break;
         case 'exception':
             if (this.callbacks.exception !== null) this.callbacks.exception(response.data as ExceptionMessage);
@@ -62,5 +69,9 @@ export class Receiver {
             clearInterval(this.interval);
             this.interval = null;
         }
+    }
+
+    public requestClientData(clientData: ClientDataArea, period: ClientDataPeriod, request: ClientDataRequest): boolean {
+        return this.dispatcher.requestClientData(clientData, period, request);
     }
 }

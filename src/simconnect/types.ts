@@ -7,7 +7,7 @@ export interface ClientDataDefinition {
 }
 
 export interface DispatcherResponse {
-    type: string;
+    type: 'open' | 'quit' | 'clientData' | 'exception' | 'error';
     data: object;
 }
 

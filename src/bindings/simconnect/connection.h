@@ -18,6 +18,7 @@ namespace simconnect {
         bool _isConnected;
         std::string _lastError;
         std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
+        std::list<SIMCONNECT_DATA_DEFINITION_ID> _simulatorDataIds;
 
         void close();
 
@@ -46,6 +47,17 @@ namespace simconnect {
          * @param clientDataId The client data ID
          */
         void addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId);
+        /**
+         * @brief Checks if a simulator data ID exists
+         * @param clientDataId The simulator data ID
+         * @return True if the ID is already registered, else false
+         */
+        bool simulatorDataIdExists(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) const;
+        /**
+         * @brief Adds the simulator data ID to the managed list
+         * @param simulatorDataId The simulator data ID
+         */
+        void addSimulatorDataId(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId);
         /**
          * @brief Marks if the connection with the server response is established
          * @param established True if the server response was received, else false

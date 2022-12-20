@@ -11,7 +11,8 @@ Connection::Connection(const Napi::CallbackInfo& info) :
         _simConnect(0),
         _isConnected(false),
         _lastError(),
-        _clientDataIds() { }
+        _clientDataIds(),
+        _simulatorDataIds() { }
 
 Connection::~Connection() {
     if (this->_simConnect != 0) {
@@ -42,6 +43,19 @@ bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) cons
 
 void Connection::addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId) {
     this->_clientDataIds.push_back(clientDataId);
+}
+
+bool Connection::simulatorDataIdExists(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) const {
+    for (const auto& id : std::as_const(this->_simulatorDataIds)) {
+        if (id == simulatorDataId)
+            return true;
+    }
+
+    return false;
+}
+
+void Connection::addSimulatorDataId(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) {
+    this->_simulatorDataIds.push_back(simulatorDataId);
 }
 
 void Connection::connectionEstablished(bool established) {

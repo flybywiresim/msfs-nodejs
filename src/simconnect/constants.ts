@@ -11,6 +11,26 @@ export enum ClientDataType {
     Float64 = -6
 }
 
+export enum SimulatorDataType {
+    Invalid = 0,
+    Int32 = 1,
+    Int64 = 2,
+    Float32 = 3,
+    Float64 = 4,
+    String8 = 5,
+    String32 = 6,
+    String64 = 7,
+    String128 = 8,
+    String256 = 9,
+    String260 = 10,
+    StringVariable = 11,
+    InitPosition = 12,
+    MarkerState = 13,
+    Waypoint = 14,
+    LatLongAlt = 15,
+    XYZ = 16,
+}
+
 export enum ClientDataPeriod {
     Never = 0,
     Once = 1,

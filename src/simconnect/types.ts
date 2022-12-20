@@ -1,9 +1,18 @@
+import { SimulatorDataType } from './constants';
+
 export interface ClientDataDefinition {
     definitionId: number;
     offset: number;
     sizeOrType: number;
     epsilon: number;
     memberName: string;
+}
+
+export interface SimulatorDataDefinition {
+    type: SimulatorDataType,
+    name: string,
+    unit: string,
+    memberName: string,
 }
 
 export interface DispatcherResponse {

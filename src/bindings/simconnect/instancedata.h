@@ -7,6 +7,7 @@ namespace simconnect {
     struct InstanceData {
         Napi::FunctionReference* connectionConstructor = nullptr;
         Napi::FunctionReference* clientDataAreaConstructor = nullptr;
+        Napi::FunctionReference* simulatorDataAreaConstructor = nullptr;
         Napi::FunctionReference* dispatcherConstructor = nullptr;
     };
 }

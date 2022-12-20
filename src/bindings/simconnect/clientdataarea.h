@@ -37,6 +37,10 @@ namespace simconnect {
          * @return The client data ID
          */
         const SIMCONNECT_CLIENT_DATA_ID& id() const;
+        /**
+         * @brief Returns all registered definitions
+         * @return The list of all definitions
+         */
         const std::list<ClientDataDefinition>& definitions() const;
         /**
          * @brief Maps the client data name to the ID on the server

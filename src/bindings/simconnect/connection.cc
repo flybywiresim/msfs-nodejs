@@ -31,6 +31,15 @@ HANDLE Connection::simConnect() const {
     return this->_simConnect;
 }
 
+bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const {
+    for (const auto& id : std::as_const(this->_clientDataIds)) {
+        if (id == clientDataId)
+            return true;
+    }
+
+    return false;
+}
+
 void Connection::addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId) {
     this->_clientDataIds.push_back(clientDataId);
 }
@@ -88,15 +97,6 @@ Napi::Value Connection::isConnected(const Napi::CallbackInfo& info) {
     }
 
     return Napi::Boolean::New(env, this->isConnected());
-}
-
-bool Connection::clientDataIdExists(SIMCONNECT_CLIENT_DATA_ID clientDataId) const {
-    for (const auto& id : std::as_const(this->_clientDataIds)) {
-        if (id == clientDataId)
-            return true;
-    }
-
-    return false;
 }
 
 Napi::Value Connection::lastError(const Napi::CallbackInfo& info) {

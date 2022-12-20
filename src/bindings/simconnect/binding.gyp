@@ -7,7 +7,8 @@
         "connection.cc",
         "dispatcher.cc",
         "helper.cc",
-        "simconnect.cc"
+        "simconnect.cc",
+        "simulatordataarea.cc"
       ],
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],

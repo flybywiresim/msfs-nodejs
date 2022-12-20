@@ -254,6 +254,7 @@ Napi::Value ClientDataArea::setData(const Napi::CallbackInfo& info) {
                 }
 
                 found = true;
+                break;
             }
         }
 

@@ -1,13 +1,21 @@
 import { ClientDataArea } from './clientdataarea';
-import { ClientDataPeriod, ClientDataRequest } from './constants';
+import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
 import { Connection } from './connection';
 import { Dispatcher } from './dispatcher';
-import { ClientDataRequestMessage, ErrorMessage, ExceptionMessage, OpenMessage } from './types';
+import { SimulatorDataArea } from './simulatordataarea';
+import {
+    ClientDataRequestMessage,
+    ErrorMessage,
+    ExceptionMessage,
+    OpenMessage,
+    SimulatorDataRequestMessage,
+} from './types';
 
 export type ReceiverCallbacks = {
     open: (message: OpenMessage) => void;
     quit: () => void;
     clientData: (message: ClientDataRequestMessage) => void;
+    simulatorData: (message: SimulatorDataRequestMessage) => void;
     exception: (message: ExceptionMessage) => void;
     error: (message: ErrorMessage) => void;
 }
@@ -21,6 +29,7 @@ export class Receiver {
         open: null,
         quit: null,
         clientData: null,
+        simulatorData: null,
         exception: null,
         error: null,
     }
@@ -42,6 +51,9 @@ export class Receiver {
             break;
         case 'clientData':
             if (this.callbacks.clientData !== null) this.callbacks.clientData(response.data as ClientDataRequestMessage);
+            break;
+        case 'simulatorData':
+            if (this.callbacks.simulatorData !== null) this.callbacks.simulatorData(response.data as SimulatorDataRequestMessage);
             break;
         case 'exception':
             if (this.callbacks.exception !== null) this.callbacks.exception(response.data as ExceptionMessage);
@@ -73,5 +85,9 @@ export class Receiver {
 
     public requestClientData(clientData: ClientDataArea, period: ClientDataPeriod, request: ClientDataRequest): boolean {
         return this.dispatcher.requestClientData(clientData, period, request);
+    }
+
+    public requestSimulatorData(simulatorData: SimulatorDataArea, period: SimulatorDataPeriod): boolean {
+        return this.dispatcher.requestSimulatorData(simulatorData, period);
     }
 }

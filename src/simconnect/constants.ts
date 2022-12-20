@@ -39,6 +39,14 @@ export enum ClientDataPeriod {
     Second = 4,
 }
 
+export enum SimulatorDataPeriod {
+    Never = 0,
+    Once = 1,
+    VisualFrame = 2,
+    SimFrame = 3,
+    Second = 4,
+}
+
 export enum ClientDataRequest {
     Default = 0,
     Changed = 1,

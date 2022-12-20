@@ -16,7 +16,7 @@ export interface SimulatorDataDefinition {
 }
 
 export interface DispatcherResponse {
-    type: 'open' | 'quit' | 'clientData' | 'exception' | 'error';
+    type: 'open' | 'quit' | 'clientData' | 'simulatorData' | 'exception' | 'error';
     data: object;
 }
 
@@ -52,5 +52,10 @@ export interface ErrorMessage {
 
 export interface ClientDataRequestMessage {
     clientDataId: number;
+    content: object;
+}
+
+export interface SimulatorDataRequestMessage {
+    definitionId: number;
     content: object;
 }

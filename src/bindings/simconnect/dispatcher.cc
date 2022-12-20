@@ -8,6 +8,7 @@ Dispatcher::Dispatcher(const Napi::CallbackInfo& info) :
         Napi::ObjectWrap<Dispatcher>(info),
         _connection(nullptr),
         _requestedClientAreas(),
+        _requestedSimulatorDataArea(),
         _lastError() {
     Napi::Env env = info.Env();
 
@@ -115,6 +116,46 @@ Napi::Value Dispatcher::requestClientData(const Napi::CallbackInfo& info) {
     auto retval = clientDataArea->requestData(this->_requestId, period, flag);
     if (retval) {
         this->_requestedClientAreas.push_back(clientDataArea);
+    }
+
+    return Napi::Boolean::New(env, retval);
+}
+
+Napi::Value Dispatcher::requestSimulatorData(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_connection->isConnected() == false) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (info.Length() != 2) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'simulatorDataArea' must be an object of type SimulatorDataArea").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'period' must be a number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    auto simulatorDataArea = Napi::ObjectWrap<SimulatorDataArea>::Unwrap(info[0].As<Napi::Object>());
+    const auto period = static_cast<SIMCONNECT_PERIOD>(info[1].As<Napi::Number>().Uint32Value());
+
+    /* check if area is already in -> update flags, etc */
+    for (auto area : this->_requestedSimulatorDataArea) {
+        if (area->id() == simulatorDataArea->id()) {
+            auto retval = area->updateRequestData(period);
+            return Napi::Boolean::New(env, retval);
+        }
+    }
+
+    auto retval = simulatorDataArea->requestData(this->_requestId++, period);
+    if (retval) {
+        this->_requestedSimulatorDataArea.push_back(simulatorDataArea);
     }
 
     return Napi::Boolean::New(env, retval);
@@ -241,6 +282,7 @@ Napi::Value Dispatcher::lastError(const Napi::CallbackInfo& info) {
 Napi::Object Dispatcher::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "DispatcherBindings", {
         InstanceMethod<&Dispatcher::requestClientData>("requestClientData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Dispatcher::requestSimulatorData>("requestSimulatorData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::nextDispatch>("nextDispatch", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });

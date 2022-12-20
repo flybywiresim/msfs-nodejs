@@ -4,6 +4,7 @@
 
 #include "clientdataarea.h"
 #include "connection.h"
+#include "simulatordataarea.h"
 
 namespace msfs {
 namespace simconnect {
@@ -12,6 +13,7 @@ namespace simconnect {
         Connection* _connection;
         SIMCONNECT_DATA_REQUEST_ID _requestId;
         std::list<ClientDataArea*> _requestedClientAreas;
+        std::list<SimulatorDataArea*> _requestedSimulatorDataArea;
         std::string _lastError;
 
         static Napi::Object convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN* message);
@@ -30,6 +32,12 @@ namespace simconnect {
          * @return True if the entries are requested, else false
          */
         Napi::Value requestClientData(const Napi::CallbackInfo& info);
+        /**
+         * @brief Requests all elements of a ClientDataArea
+         * @param info The information block with the SimulatorDataArea, the period and the flag
+         * @return True if the entries are requested, else false
+         */
+        Napi::Value requestSimulatorData(const Napi::CallbackInfo& info);
         /**
          * @brief Processes the next dispatch and triggers the corresponding events
          * @param info The information block without additional parameters

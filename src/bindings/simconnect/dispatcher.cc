@@ -171,15 +171,31 @@ Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_
     object.Set(Napi::String::New(env, "content"), content);
 
     switch (definition.sizeOrType) {
-    case SIMCONNECT_CLIENTDATATYPE_INT8:
-    case SIMCONNECT_CLIENTDATATYPE_INT16:
-    case SIMCONNECT_CLIENTDATATYPE_INT32:
+    case SIMCONNECT_CLIENTDATATYPE_INT8: {
+        std::int8_t* array = reinterpret_cast<std::int8_t*>(&message->dwData);
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
+    case SIMCONNECT_CLIENTDATATYPE_INT16: {
+        std::int16_t* array = reinterpret_cast<std::int16_t*>(&message->dwData);
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
+    case SIMCONNECT_CLIENTDATATYPE_INT32: {
+        std::int32_t* array = reinterpret_cast<std::int32_t*>(&message->dwData);
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
     case SIMCONNECT_CLIENTDATATYPE_INT64: {
         std::int64_t* array = reinterpret_cast<std::int64_t*>(&message->dwData);
         content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
         break;
     }
-    case SIMCONNECT_CLIENTDATATYPE_FLOAT32:
+    case SIMCONNECT_CLIENTDATATYPE_FLOAT32: {
+        float* array = reinterpret_cast<float*>(&message->dwData);
+        content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));
+        break;
+    }
     case SIMCONNECT_CLIENTDATATYPE_FLOAT64: {
         double* array = reinterpret_cast<double*>(&message->dwData);
         content.Set(Napi::String::New(env, definition.memberName), Napi::Number::New(env, array[0]));

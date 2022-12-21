@@ -1,7 +1,6 @@
 # compiled output
-/dist/*.js*
-/dist/*.ts*
-/dist/*/*.ts*
+*.js*
+*.d.ts
 !/dist/libs/simconnect.node
 /node_modules
 /src/node_modules

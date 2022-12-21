@@ -22,6 +22,13 @@ namespace simconnect {
         static Napi::Object convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_RECV_CLIENT_DATA* message,
                                                          SIMCONNECT_CLIENT_DATA_ID clientDataId,
                                                          const ClientDataArea::ClientDataDefinition& definition);
+        static Napi::Object convertSimulatorDataInitPosition(Napi::Env env, std::uint8_t* data);
+        static Napi::Object convertSimulatorDataMarkerState(Napi::Env env, std::uint8_t* data);
+        static Napi::Object convertSimulatorDataWaypoint(Napi::Env env, std::uint8_t* data);
+        static Napi::Object convertSimulatorDataLatLongAlt(Napi::Env env, std::uint8_t* data);
+        static Napi::Object convertSimulatorDataXYZ(Napi::Env env, std::uint8_t* data);
+        Napi::Object convertSimulatorDataArea(Napi::Env env, SIMCONNECT_RECV* receivedData, DWORD sizeReceivedData, std::uint8_t* data,
+                                              const std::list<SimulatorDataArea::SimulatorDataDefinition>& definition);
 
     public:
         Dispatcher(const Napi::CallbackInfo& info);

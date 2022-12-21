@@ -211,6 +211,163 @@ Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_
     return object;
 }
 
+Napi::Object Dispatcher::convertSimulatorDataInitPosition(Napi::Env env, std::uint8_t* data) {
+    Napi::Object object = Napi::Object::New(env);
+
+    SIMCONNECT_DATA_INITPOSITION* initPosition = (SIMCONNECT_DATA_INITPOSITION*)data;
+
+    object.Set(Napi::String::New(env, "latitude"), Napi::Number::New(env, initPosition->Latitude));
+    object.Set(Napi::String::New(env, "longitude"), Napi::Number::New(env, initPosition->Longitude));
+    object.Set(Napi::String::New(env, "altitude"), Napi::Number::New(env, initPosition->Altitude));
+    object.Set(Napi::String::New(env, "pitch"), Napi::Number::New(env, initPosition->Pitch));
+    object.Set(Napi::String::New(env, "bank"), Napi::Number::New(env, initPosition->Bank));
+    object.Set(Napi::String::New(env, "heading"), Napi::Number::New(env, initPosition->Heading));
+    object.Set(Napi::String::New(env, "onGround"), Napi::Boolean::New(env, initPosition->OnGround == 1));
+    object.Set(Napi::String::New(env, "airspeed"), Napi::Number::New(env, initPosition->Airspeed));
+
+    return object;
+}
+
+Napi::Object Dispatcher::convertSimulatorDataMarkerState(Napi::Env env, std::uint8_t* data) {
+    Napi::Object object = Napi::Object::New(env);
+
+    SIMCONNECT_DATA_MARKERSTATE* state = (SIMCONNECT_DATA_MARKERSTATE*)data;
+
+    object.Set(Napi::String::New(env, "name"), Napi::String::New(env, state->szMarkerName));
+    object.Set(Napi::String::New(env, "isOn"), Napi::Boolean::New(env, state->dwMarkerState == 1));
+
+    return object;
+}
+
+Napi::Object Dispatcher::convertSimulatorDataWaypoint(Napi::Env env, std::uint8_t* data) {
+    Napi::Object object = Napi::Object::New(env);
+
+    SIMCONNECT_DATA_WAYPOINT* waypoint = (SIMCONNECT_DATA_WAYPOINT*)data;
+
+    object.Set(Napi::String::New(env, "latitude"), Napi::Number::New(env, waypoint->Latitude));
+    object.Set(Napi::String::New(env, "longitude"), Napi::Number::New(env, waypoint->Longitude));
+    object.Set(Napi::String::New(env, "altitude"), Napi::Number::New(env, waypoint->Altitude));
+    object.Set(Napi::String::New(env, "flags"), Napi::Number::New(env, waypoint->Flags));
+    object.Set(Napi::String::New(env, "speedInKnots"), Napi::Number::New(env, waypoint->ktsSpeed));
+    if (waypoint->Flags & SIMCONNECT_WAYPOINT_THROTTLE_REQUESTED) {
+        object.Set(Napi::String::New(env, "percentThrottle"), Napi::Number::New(env, waypoint->percentThrottle));
+    }
+
+    return object;
+}
+
+Napi::Object Dispatcher::convertSimulatorDataLatLongAlt(Napi::Env env, std::uint8_t* data) {
+    Napi::Object object = Napi::Object::New(env);
+
+    SIMCONNECT_DATA_LATLONALT* position = (SIMCONNECT_DATA_LATLONALT*)data;
+
+    object.Set(Napi::String::New(env, "latitude"), Napi::Number::New(env, position->Latitude));
+    object.Set(Napi::String::New(env, "longitude"), Napi::Number::New(env, position->Longitude));
+    object.Set(Napi::String::New(env, "altitude"), Napi::Number::New(env, position->Altitude));
+
+    return object;
+}
+
+Napi::Object Dispatcher::convertSimulatorDataXYZ(Napi::Env env, std::uint8_t* data) {
+    Napi::Object object = Napi::Object::New(env);
+
+    SIMCONNECT_DATA_XYZ* xyz = (SIMCONNECT_DATA_XYZ*)data;
+
+    object.Set(Napi::String::New(env, "x"), Napi::Number::New(env, xyz->x));
+    object.Set(Napi::String::New(env, "y"), Napi::Number::New(env, xyz->y));
+    object.Set(Napi::String::New(env, "z"), Napi::Number::New(env, xyz->z));
+
+    return object;
+}
+
+Napi::Object Dispatcher::convertSimulatorDataArea(Napi::Env env, SIMCONNECT_RECV* receivedData, DWORD sizeReceivedData, std::uint8_t* data,
+                                                  const std::list<SimulatorDataArea::SimulatorDataDefinition>& definition) {
+    Napi::Object object = Napi::Object::New(env);
+    std::size_t offset = 0;
+
+    for (const auto& entry : std::as_const(definition)) {
+        switch (entry.type) {
+        case SIMCONNECT_DATATYPE_FLOAT32:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::Number::New(env, *((float*)&data[offset])));
+            offset += sizeof(float);
+            break;
+        case SIMCONNECT_DATATYPE_FLOAT64:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::Number::New(env, *((double*)&data[offset])));
+            offset += sizeof(double);
+            break;
+        case SIMCONNECT_DATATYPE_INT32:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::Number::New(env, *((std::int32_t*)&data[offset])));
+            offset += sizeof(std::int32_t);
+            break;
+        case SIMCONNECT_DATATYPE_INT64:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::Number::New(env, *((std::int64_t*)&data[offset])));
+            offset += sizeof(std::int64_t);
+            break;
+        case SIMCONNECT_DATATYPE_STRING8:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 8])));
+            offset += 8;
+            break;
+        case SIMCONNECT_DATATYPE_STRING32:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 32])));
+            offset += 32;
+            break;
+        case SIMCONNECT_DATATYPE_STRING64:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 64])));
+            offset += 64;
+            break;
+        case SIMCONNECT_DATATYPE_STRING128:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 128])));
+            offset += 128;
+            break;
+        case SIMCONNECT_DATATYPE_STRING256:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 256])));
+            offset += 256;
+            break;
+        case SIMCONNECT_DATATYPE_STRING260:
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, std::string((char*)&data[offset], (char*)&data[offset + 260])));
+            offset += 260;
+            break;
+        case SIMCONNECT_DATATYPE_STRINGV: {
+            char* string;
+            DWORD length;
+
+            HRESULT result = SimConnect_RetrieveString(receivedData, sizeReceivedData, (BYTE*)&data[offset], &string, &length);
+            if (result != S_OK) {
+                this->_lastError = "Unable to decode variable string of " + entry.memberName;
+                return Napi::Object::New(env);
+            }
+
+            object.Set(Napi::String::New(env, entry.memberName), Napi::String::New(env, string));
+            offset += length;
+
+            break;
+        }
+        case SIMCONNECT_DATATYPE_INITPOSITION:
+            object.Set(Napi::String::New(env, entry.memberName), Dispatcher::convertSimulatorDataInitPosition(env, &data[offset]));
+            offset += sizeof(SIMCONNECT_DATA_INITPOSITION);
+            break;
+        case SIMCONNECT_DATATYPE_MARKERSTATE:
+            object.Set(Napi::String::New(env, entry.memberName), Dispatcher::convertSimulatorDataMarkerState(env, &data[offset]));
+            offset += sizeof(SIMCONNECT_DATA_MARKERSTATE);
+            break;
+        case SIMCONNECT_DATATYPE_WAYPOINT:
+            object.Set(Napi::String::New(env, entry.memberName), Dispatcher::convertSimulatorDataWaypoint(env, &data[offset]));
+            offset += sizeof(SIMCONNECT_DATA_WAYPOINT);
+            break;
+        case SIMCONNECT_DATATYPE_LATLONALT:
+            object.Set(Napi::String::New(env, entry.memberName), Dispatcher::convertSimulatorDataLatLongAlt(env, &data[offset]));
+            offset += sizeof(SIMCONNECT_DATA_LATLONALT);
+            break;
+        default:
+            object.Set(Napi::String::New(env, entry.memberName), Dispatcher::convertSimulatorDataXYZ(env, &data[offset]));
+            offset += sizeof(SIMCONNECT_DATA_XYZ);
+            break;
+        }
+    }
+
+    return object;
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -273,6 +430,28 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
         if (false == found) {
             return env.Null();
         }
+        break;
+    }
+    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
+        SIMCONNECT_RECV_SIMOBJECT_DATA* data = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(receiveData);
+
+        bool found = false;
+        for (const auto& area : std::as_const(this->_requestedSimulatorDataArea)) {
+            if (area->id() == data->dwRequestID) {
+                std::uint8_t* array = (std::uint8_t*)&data->dwData;
+
+                object.Set(Napi::String::New(env, "data"), this->convertSimulatorDataArea(env, receiveData, size, array, area->dataDefinitions()));
+                object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "simulatorData"));
+
+                found = true;
+                break;
+            }
+        }
+
+        if (false == found) {
+            return env.Null();
+        }
+
         break;
     }
     default:

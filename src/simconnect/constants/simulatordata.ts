@@ -1,16 +1,3 @@
-export const ClientDataOffsetAuto = -1;
-
-export const ClientDataMaxSize = 8192;
-
-export enum ClientDataType {
-    Int8 = -1,
-    Int16 = -2,
-    Int32 = -3,
-    Int64 = -4,
-    Float32 = -5,
-    Float64 = -6
-}
-
 export enum SimulatorDataType {
     Invalid = 0,
     Int32 = 1,
@@ -31,14 +18,6 @@ export enum SimulatorDataType {
     XYZ = 16,
 }
 
-export enum ClientDataPeriod {
-    Never = 0,
-    Once = 1,
-    VisualFrame = 2,
-    OnSet = 3,
-    Second = 4,
-}
-
 export enum SimulatorDataPeriod {
     Never = 0,
     Once = 1,
@@ -55,10 +34,4 @@ export enum SimulatorDataWaypointFlags {
     OnGround = 0x00100000,
     Reverse = 0x00200000,
     WrapToFirst = 0x00400000,
-}
-
-export enum ClientDataRequest {
-    Default = 0,
-    Changed = 1,
-    Tagged = 2,
 }

@@ -1,8 +1,7 @@
-import { ClientDataArea } from './clientdataarea';
-import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
 import { Connection } from './connection';
+import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
+import { ClientDataArea, SimulatorDataArea } from './dataareas';
 import { Dispatcher } from './dispatcher';
-import { SimulatorDataArea } from './simulatordataarea';
 import {
     ClientDataRequestMessage,
     ErrorMessage,

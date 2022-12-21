@@ -1,5 +1,5 @@
-import { ClientDataDefinition } from './types';
-import { Connection } from './connection';
+import { Connection } from '../connection';
+import { ClientDataDefinition } from '../types';
 
 const simconnect = require('./libs/simconnect');
 

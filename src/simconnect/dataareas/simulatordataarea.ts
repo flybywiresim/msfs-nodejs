@@ -1,5 +1,5 @@
-import { Connection } from './connection';
-import { SimulatorDataDefinition } from './types';
+import { Connection } from '../connection';
+import { SimulatorDataDefinition } from '../types';
 
 const simconnect = require('./libs/simconnect');
 

@@ -1,7 +1,6 @@
-import { ClientDataArea } from './clientdataarea';
-import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
 import { Connection } from './connection';
-import { SimulatorDataArea } from './simulatordataarea';
+import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
+import { ClientDataArea, SimulatorDataArea } from './dataareas';
 import { DispatcherResponse } from './types';
 
 const simconnect = require('./libs/simconnect');

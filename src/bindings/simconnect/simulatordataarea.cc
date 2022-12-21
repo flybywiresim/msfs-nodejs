@@ -96,6 +96,10 @@ Napi::Value SimulatorDataArea::addDataDefinition(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, true);
 }
 
+const std::list<SimulatorDataArea::SimulatorDataDefinition>& SimulatorDataArea::dataDefinitions() const {
+    return this->_dataDefinitions;
+}
+
 bool SimulatorDataArea::requestData(SIMCONNECT_DATA_REQUEST_ID requestId, SIMCONNECT_PERIOD period) {
     this->_requestId = requestId;
     return this->updateRequestData(period);

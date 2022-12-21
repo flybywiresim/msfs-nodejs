@@ -50,6 +50,11 @@ namespace simconnect {
          */
         bool updateRequestData(SIMCONNECT_PERIOD period);
         /**
+         * @brief Returns the list of registered data elements
+         * @return The list of all data definitions
+         */
+        const std::list<SimulatorDataDefinition>& dataDefinitions() const;
+        /**
          * @brief Returns the last error of an other call
          * @param info The parameter block without additional parameters
          * @return Returns Napi::String with the last error

@@ -440,7 +440,12 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
             if (area->id() == data->dwRequestID) {
                 std::uint8_t* array = (std::uint8_t*)&data->dwData;
 
-                object.Set(Napi::String::New(env, "data"), this->convertSimulatorDataArea(env, receiveData, size, array, area->dataDefinitions()));
+                Napi::Object dataObject = Napi::Object::New(env);
+                dataObject.Set(Napi::String::New(env, "definitionId"), Napi::Number::New(env, area->id()));
+                Napi::Object content = Napi::Object::New(env);
+                dataObject.Set(Napi::String::New(env, "content"), this->convertSimulatorDataArea(env, receiveData, size, array, area->dataDefinitions()));
+
+                object.Set(Napi::String::New(env, "data"), dataObject);
                 object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "simulatorData"));
 
                 found = true;

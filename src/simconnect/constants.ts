@@ -47,6 +47,16 @@ export enum SimulatorDataPeriod {
     Second = 4,
 }
 
+export enum SimulatorDataWaypointFlags {
+    SpeedRequested = 0x04,
+    ThrottleRequested = 0x08,
+    ComputeVerticalSpeed = 0x10,
+    AltitudeIsAGL = 0x20,
+    OnGround = 0x00100000,
+    Reverse = 0x00200000,
+    WrapToFirst = 0x00400000,
+}
+
 export enum ClientDataRequest {
     Default = 0,
     Changed = 1,

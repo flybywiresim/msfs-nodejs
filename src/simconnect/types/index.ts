@@ -1,6 +1,3 @@
-export * from './clientdata';
-export * from './simulatordata';
-
 export interface DispatcherResponse {
     type: 'open' | 'quit' | 'clientData' | 'simulatorData' | 'exception' | 'error';
     data: object;
@@ -35,3 +32,6 @@ export interface ErrorMessage {
     size: number;
     version: number;
 }
+
+export * from './clientdata';
+export * from './simulatordata';

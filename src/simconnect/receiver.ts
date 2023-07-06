@@ -8,6 +8,7 @@ import {
     ExceptionMessage,
     OpenMessage,
     SimulatorDataRequestMessage,
+    SystemEventMessage,
 } from './types';
 
 export type ReceiverCallbacks = {
@@ -15,6 +16,7 @@ export type ReceiverCallbacks = {
     quit: () => void;
     clientData: (message: ClientDataRequestMessage) => void;
     simulatorData: (message: SimulatorDataRequestMessage) => void;
+    systemEvent: (message: SystemEventMessage) => void;
     exception: (message: ExceptionMessage) => void;
     error: (message: ErrorMessage) => void;
 }
@@ -29,6 +31,7 @@ export class Receiver {
         quit: null,
         clientData: null,
         simulatorData: null,
+        systemEvent: null,
         exception: null,
         error: null,
     }
@@ -53,6 +56,9 @@ export class Receiver {
             break;
         case 'simulatorData':
             if (this.callbacks.simulatorData !== null) this.callbacks.simulatorData(response.data as SimulatorDataRequestMessage);
+            break;
+        case 'systemEvent':
+            if (this.callbacks.systemEvent !== null) this.callbacks.systemEvent(response.data as SystemEventMessage);
             break;
         case 'exception':
             if (this.callbacks.exception !== null) this.callbacks.exception(response.data as ExceptionMessage);

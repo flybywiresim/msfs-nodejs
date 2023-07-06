@@ -49,7 +49,7 @@ namespace simconnect {
         void addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId);
         /**
          * @brief Checks if a simulator data ID exists
-         * @param clientDataId The simulator data ID
+         * @param simulatorDataId The simulator data ID
          * @return True if the ID is already registered, else false
          */
         bool simulatorDataIdExists(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) const;

@@ -40,7 +40,7 @@ namespace simconnect {
          */
         Napi::Value requestClientData(const Napi::CallbackInfo& info);
         /**
-         * @brief Requests all elements of a ClientDataArea
+         * @brief Requests all elements of a SimulatorDataArea
          * @param info The information block with the SimulatorDataArea, the period and the flag
          * @return True if the entries are requested, else false
          */

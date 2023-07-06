@@ -5,6 +5,7 @@
 #include "clientdataarea.h"
 #include "connection.h"
 #include "simulatordataarea.h"
+#include "systemevent.h"
 
 namespace msfs {
 namespace simconnect {
@@ -14,6 +15,7 @@ namespace simconnect {
         SIMCONNECT_DATA_REQUEST_ID _requestId;
         std::list<ClientDataArea*> _requestedClientAreas;
         std::list<SimulatorDataArea*> _requestedSimulatorDataArea;
+        std::list<SystemEvent*> _subscribedSystemEvents;
         std::string _lastError;
 
         static Napi::Object convertOpenMessage(Napi::Env env, SIMCONNECT_RECV_OPEN* message);
@@ -29,6 +31,8 @@ namespace simconnect {
         static Napi::Object convertSimulatorDataXYZ(Napi::Env env, std::uint8_t* data);
         Napi::Object convertSimulatorDataArea(Napi::Env env, SIMCONNECT_RECV* receivedData, DWORD sizeReceivedData, std::uint8_t* data,
                                               const std::list<SimulatorDataArea::SimulatorDataDefinition>& definition);
+        static bool processFilenameSystemEvents(Napi::Env env, SIMCONNECT_RECV* receivedData, const SystemEvent* event, Napi::Object& returnObject);
+        static bool processObjectSystemEvents(Napi::Env env, SIMCONNECT_RECV* receivedData, const SystemEvent* event, Napi::Object& returnObject);
 
     public:
         Dispatcher(const Napi::CallbackInfo& info);
@@ -45,6 +49,18 @@ namespace simconnect {
          * @return True if the entries are requested, else false
          */
         Napi::Value requestSimulatorData(const Napi::CallbackInfo& info);
+        /**
+         * @brief Subscribes to a system event of SystemEvent
+         * @param info The information block with the SystemEvent
+         * @return True if the subscribtion was successful, else false
+         */
+        Napi::Value subscribeSystemEvent(const Napi::CallbackInfo& info);
+        /**
+         * @brief Unsubscribes to a system event of SystemEvent
+         * @param info The information block with the SystemEvent
+         * @return True if the unsubscribtion was successful, else false
+         */
+        Napi::Value unsubscribeSystemEvent(const Napi::CallbackInfo& info);
         /**
          * @brief Processes the next dispatch and triggers the corresponding events
          * @param info The information block without additional parameters

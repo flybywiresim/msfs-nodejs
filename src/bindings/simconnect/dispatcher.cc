@@ -9,6 +9,7 @@ Dispatcher::Dispatcher(const Napi::CallbackInfo& info) :
         _connection(nullptr),
         _requestedClientAreas(),
         _requestedSimulatorDataArea(),
+        _subscribedSystemEvents(),
         _lastError() {
     Napi::Env env = info.Env();
 
@@ -159,6 +160,71 @@ Napi::Value Dispatcher::requestSimulatorData(const Napi::CallbackInfo& info) {
     }
 
     return Napi::Boolean::New(env, retval);
+}
+
+Napi::Value Dispatcher::subscribeSystemEvent(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_connection->isConnected() == false) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (info.Length() != 1) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'systemEvent' must be an object of type SystemEvent").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    auto systemEvent = Napi::ObjectWrap<SystemEvent>::Unwrap(info[0].As<Napi::Object>());
+
+    for (auto area : this->_subscribedSystemEvents) {
+        if (area->id() == systemEvent->id()) {
+            return Napi::Boolean::New(env, true);
+        }
+    }
+
+    auto retval = systemEvent->subscribe();
+    if (retval) {
+        this->_subscribedSystemEvents.push_back(systemEvent);
+    }
+
+    return Napi::Boolean::New(env, retval);
+}
+
+Napi::Value Dispatcher::unsubscribeSystemEvent(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_connection->isConnected() == false) {
+        Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (info.Length() != 1) {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Invalid argument type. 'systemEvent' must be an object of type SystemEvent").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    auto systemEvent = Napi::ObjectWrap<SystemEvent>::Unwrap(info[0].As<Napi::Object>());
+
+    for (auto it = this->_subscribedSystemEvents.begin(); it != this->_subscribedSystemEvents.end(); ++it) {
+        if ((*it)->id() == systemEvent->id()) {
+            auto retval = systemEvent->unsubscribe();
+            if (true == retval) {
+                this->_subscribedSystemEvents.erase(it);
+            }
+            return Napi::Boolean::New(env, retval);
+        }
+    }
+
+    return Napi::Boolean::New(env, false);
 }
 
 Napi::Object Dispatcher::convertClientDataAreaMessage(Napi::Env env, SIMCONNECT_RECV_CLIENT_DATA* message,
@@ -368,12 +434,52 @@ Napi::Object Dispatcher::convertSimulatorDataArea(Napi::Env env, SIMCONNECT_RECV
     return object;
 }
 
+bool Dispatcher::processFilenameSystemEvents(Napi::Env env, SIMCONNECT_RECV* receivedData, const SystemEvent* event, Napi::Object& returnObject) {
+    static const std::vector<std::string> filenameEvents{
+        "AircraftLoaded",
+        "FlightLoaded",
+        "FlightSaved",
+        "FlightPlanActivated",
+    };
+
+    auto foundEventName = std::find(std::cbegin(filenameEvents), std::cend(filenameEvents), event->eventName()) != std::cend(filenameEvents);
+    if (foundEventName == true) {
+        SIMCONNECT_RECV_EVENT_FILENAME* data = static_cast<SIMCONNECT_RECV_EVENT_FILENAME*>(receivedData);
+        Napi::Object filenameObject = Napi::Object::New(env);
+        filenameObject.Set(Napi::String::New(env, "filename"), Napi::String::New(env, data->szFileName));
+        returnObject.Set(Napi::String::New(env, "content"), filenameObject);
+    }
+
+    return foundEventName;
+}
+
+bool Dispatcher::processObjectSystemEvents(Napi::Env env, SIMCONNECT_RECV* receivedData, const SystemEvent* event, Napi::Object& returnObject) {
+    static const std::vector<std::string> objectEvents{
+        "ObjectAdded",
+        "ObjectRemoved",
+    };
+
+    auto foundEventName = std::find(std::cbegin(objectEvents), std::cend(objectEvents), event->eventName()) != std::cend(objectEvents);
+    if (foundEventName == true) {
+        SIMCONNECT_RECV_EVENT_OBJECT_ADDREMOVE* data = static_cast<SIMCONNECT_RECV_EVENT_OBJECT_ADDREMOVE*>(receivedData);
+        Napi::Object aiObject = Napi::Object::New(env);
+
+        aiObject.Set(Napi::String::New(env, "type"), Napi::Number::New(env, data->eObjType));
+        aiObject.Set(Napi::String::New(env, "id"), Napi::Number::New(env, data->dwData));
+        returnObject.Set(Napi::String::New(env, "content"), aiObject);
+    }
+
+    return foundEventName;
+}
+
 Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     if (this->_connection->simConnect() == 0) {
         Napi::Error::New(env, "Not connected to the server").ThrowAsJavaScriptException();
         this->_requestedClientAreas.clear();
+        this->_requestedSimulatorDataArea.clear();
+        this->_subscribedSystemEvents.clear();
         return env.Null();
     }
 
@@ -459,6 +565,41 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
 
         break;
     }
+    // all system event messages
+    case SIMCONNECT_RECV_ID_EVENT:
+    case SIMCONNECT_RECV_ID_EVENT_FILENAME:
+    case SIMCONNECT_RECV_ID_EVENT_OBJECT_ADDREMOVE: {
+        SIMCONNECT_RECV_EVENT* data = static_cast<SIMCONNECT_RECV_EVENT*>(receiveData);
+        for (const auto& event : std::as_const(this->_subscribedSystemEvents)) {
+            if (event->id() == data->uEventID) {
+                Napi::Object eventObject = Napi::Object::New(env);
+                eventObject.Set(Napi::String::New(env, "eventId"), Napi::Number::New(env, event->id()));
+
+                if (event->eventName() == "Pause" || event->eventName() == "Pause_EX1") {
+                    Napi::Object pauseObject = Napi::Object::New(env);
+                    pauseObject.Set(Napi::String::New(env, "type"), Napi::Number::New(env, data->dwData));
+                    eventObject.Set(Napi::String::New(env, "content"), pauseObject);
+                } else if (event->eventName() == "Sim") {
+                    Napi::Object simObject = Napi::Object::New(env);
+                    simObject.Set(Napi::String::New(env, "running"), Napi::Boolean::New(env, data->dwData == 1));
+                    eventObject.Set(Napi::String::New(env, "content"), simObject);
+                } else if (event->eventName() == "Sound") {
+                    Napi::Object soundObject = Napi::Object::New(env);
+                    soundObject.Set(Napi::String::New(env, "soundSwitchOn"), Napi::Boolean::New(env, data->dwData != 0));
+                    eventObject.Set(Napi::String::New(env, "content"), soundObject);
+                } else if (event->eventName() == "View") {
+                    Napi::Object viewObject = Napi::Object::New(env);
+                    viewObject.Set(Napi::String::New(env, "view"), Napi::Number::New(env, data->dwData));
+                    eventObject.Set(Napi::String::New(env, "content"), viewObject);
+                } else if (false == Dispatcher::processFilenameSystemEvents(env, receiveData, event, eventObject)) {
+                    Dispatcher::processObjectSystemEvents(env, receiveData, event, eventObject);
+                }
+
+                object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "systemEvent"));
+                object.Set(Napi::String::New(env, "data"), eventObject);
+            }
+        }
+    }
     default:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertUnknownMessage(env, receiveData));
         object.Set(Napi::String::New(env, "type"), Napi::String::New(env, "error"));
@@ -483,6 +624,8 @@ Napi::Object Dispatcher::initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "DispatcherBindings", {
         InstanceMethod<&Dispatcher::requestClientData>("requestClientData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::requestSimulatorData>("requestSimulatorData", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Dispatcher::subscribeSystemEvent>("subscribeSystemEvent", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Dispatcher::unsubscribeSystemEvent>("unsubscribeSystemEvent", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::nextDispatch>("nextDispatch", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&Dispatcher::lastError>("lastError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
     });

@@ -2,6 +2,7 @@ import { Connection } from './connection';
 import { ClientDataPeriod, ClientDataRequest, SimulatorDataPeriod } from './constants';
 import { ClientDataArea, SimulatorDataArea } from './dataareas';
 import { Dispatcher } from './dispatcher';
+import { SystemEvent } from './events';
 import {
     ClientDataRequestMessage,
     ErrorMessage,
@@ -94,5 +95,13 @@ export class Receiver {
 
     public requestSimulatorData(simulatorData: SimulatorDataArea, period: SimulatorDataPeriod): boolean {
         return this.dispatcher.requestSimulatorData(simulatorData, period);
+    }
+
+    public subscribeSystemEvent(systemEvent: SystemEvent): boolean {
+        return this.dispatcher.subscribeSystemEvent(systemEvent);
+    }
+
+    public unsubscribeSystemEvent(systemEvent: SystemEvent): boolean {
+        return this.dispatcher.unsubscribeSystemEvent(systemEvent);
     }
 }

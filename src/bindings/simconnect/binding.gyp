@@ -8,7 +8,8 @@
         "dispatcher.cc",
         "helper.cc",
         "simconnect.cc",
-        "simulatordataarea.cc"
+        "simulatordataarea.cc",
+        "systemevent.cc"
       ],
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],

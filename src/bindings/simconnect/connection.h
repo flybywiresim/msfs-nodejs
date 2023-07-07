@@ -19,6 +19,7 @@ namespace simconnect {
         std::string _lastError;
         std::list<SIMCONNECT_CLIENT_DATA_ID> _clientDataIds;
         std::list<SIMCONNECT_DATA_DEFINITION_ID> _simulatorDataIds;
+        std::list<std::uint32_t> _systemEventIds;
 
         void close();
 
@@ -49,7 +50,7 @@ namespace simconnect {
         void addClientDataId(SIMCONNECT_CLIENT_DATA_ID clientDataId);
         /**
          * @brief Checks if a simulator data ID exists
-         * @param clientDataId The simulator data ID
+         * @param simulatorDataId The simulator data ID
          * @return True if the ID is already registered, else false
          */
         bool simulatorDataIdExists(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) const;
@@ -58,6 +59,17 @@ namespace simconnect {
          * @param simulatorDataId The simulator data ID
          */
         void addSimulatorDataId(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId);
+        /**
+         * @brief Checks if a system event ID exists
+         * @param systemEventId The system event ID
+         * @return True if the ID is already registered, else false
+         */
+        bool systemEventIdExists(std::uint32_t systemEventId) const;
+        /**
+         * @brief Adds the system event ID to the managed list
+         * @param systemEventId The system event ID
+         */
+        void addSystemEventId(std::uint32_t systemEventId);
         /**
          * @brief Marks if the connection with the server response is established
          * @param established True if the server response was received, else false

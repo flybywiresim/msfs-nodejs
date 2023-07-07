@@ -5,6 +5,7 @@
 #include "dispatcher.h"
 #include "instancedata.h"
 #include "simulatordataarea.h"
+#include "systemevent.h"
 
 using namespace msfs::simconnect;
 
@@ -17,6 +18,7 @@ Napi::Object initialize(Napi::Env env, Napi::Object exports) {
     exports = ClientDataArea::initialize(env, exports);
     exports = Dispatcher::initialize(env, exports);
     exports = SimulatorDataArea::initialize(env, exports);
+    exports = SystemEvent::initialize(env, exports);
 
     return exports;
 }

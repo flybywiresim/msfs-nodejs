@@ -1,5 +1,5 @@
 export interface DispatcherResponse {
-    type: 'open' | 'quit' | 'clientData' | 'simulatorData' | 'exception' | 'error';
+    type: 'open' | 'quit' | 'clientData' | 'simulatorData' | 'systemEvent' | 'exception' | 'error';
     data: object;
 }
 
@@ -35,3 +35,4 @@ export interface ErrorMessage {
 
 export * from './clientdata';
 export * from './simulatordata';
+export * from './systemevent';

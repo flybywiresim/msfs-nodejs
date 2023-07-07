@@ -12,7 +12,8 @@ Connection::Connection(const Napi::CallbackInfo& info) :
         _isConnected(false),
         _lastError(),
         _clientDataIds(),
-        _simulatorDataIds() { }
+        _simulatorDataIds(),
+        _systemEventIds() { }
 
 Connection::~Connection() {
     if (this->_simConnect != 0) {
@@ -56,6 +57,19 @@ bool Connection::simulatorDataIdExists(SIMCONNECT_DATA_DEFINITION_ID simulatorDa
 
 void Connection::addSimulatorDataId(SIMCONNECT_DATA_DEFINITION_ID simulatorDataId) {
     this->_simulatorDataIds.push_back(simulatorDataId);
+}
+
+bool Connection::systemEventIdExists(std::uint32_t systemEventId) const {
+    for (const auto& id : std::as_const(this->_systemEventIds)) {
+        if (id == systemEventId)
+            return true;
+    }
+
+    return false;
+}
+
+void Connection::addSystemEventId(std::uint32_t systemEventId) {
+    this->_systemEventIds.push_back(systemEventId);
 }
 
 void Connection::connectionEstablished(bool established) {

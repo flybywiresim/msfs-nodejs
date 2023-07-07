@@ -599,6 +599,8 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
                 object.Set(Napi::String::New(env, "data"), eventObject);
             }
         }
+
+        break;
     }
     default:
         object.Set(Napi::String::New(env, "data"), Dispatcher::convertUnknownMessage(env, receiveData));

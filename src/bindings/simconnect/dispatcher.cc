@@ -543,7 +543,7 @@ Napi::Value Dispatcher::nextDispatch(const Napi::CallbackInfo& info) {
 
         bool found = false;
         for (const auto& area : std::as_const(this->_requestedSimulatorDataArea)) {
-            if (area->id() == data->dwRequestID) {
+            if (area->id() == data->dwDefineID) {
                 std::uint8_t* array = (std::uint8_t*)&data->dwData;
 
                 Napi::Object dataObject = Napi::Object::New(env);

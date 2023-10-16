@@ -25,7 +25,7 @@ export type ReceiverCallbacks = {
 export class Receiver {
     private dispatcher: Dispatcher = null;
 
-    private interval: NodeJS.Timer = null;
+    private interval: NodeJS.Timeout = null;
 
     private callbacks: ReceiverCallbacks = {
         open: null,
